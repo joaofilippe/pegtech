@@ -1,49 +1,53 @@
-package pegtech
+package main
 
 import (
+	"context"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/labstack/echo/v4"
-	mqttserver "github.com/mochi-mqtt/server/v2"
-	auth "github.com/mochi-mqtt/server/v2/hooks/auth"
-	listeners "github.com/mochi-mqtt/server/v2/listeners"
+	"github.com/joaofilippe/pegtech/infra/api"
+	"github.com/joaofilippe/pegtech/infra/mqtt"
 )
 
-func startMQTT() {
-	// Cria uma instância do broker MQTT
-	mqttServer := mqttserver.New(nil)
+func main() {
+	// Create servers
+	httpServer := api.NewHTTPServer()
+	mqttServer := mqtt.NewMQTTServer()
 
-	// Permite todas as conexões (apenas para desenvolvimento)
-	_ = mqttServer.AddHook(new(auth.AllowHook), nil)
-
-	// Cria um listener TCP na porta 1883
-	tcp := listeners.NewTCP(listeners.Config{ID: "t1", Address: ":1883"})
-	err := mqttServer.AddListener(tcp)
-	if err != nil {
-		log.Fatalf("Erro ao adicionar listener TCP: %v", err)
-	}
-
+	// Start MQTT server
 	go func() {
-		log.Println("Iniciando servidor MQTT na porta :1883...")
-		err := mqttServer.Serve()
-		if err != nil {
-			log.Fatalf("Erro ao iniciar o servidor MQTT: %v", err)
+		if err := mqttServer.Start(); err != nil {
+			log.Fatalf("Error starting MQTT server: %v", err)
 		}
 	}()
-}
 
-func main() {
-	// Inicia o servidor MQTT em uma goroutine
-	startMQTT()
-	// Create a new Echo instance
-	e := echo.New()
+	// Start HTTP server
+	go func() {
+		if err := httpServer.Start(":8080"); err != nil {
+			log.Fatalf("Error starting HTTP server: %v", err)
+		}
+	}()
 
-	// Define a route
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Welcome to PegTech API!")
-	})
+	// Wait for interrupt signal to gracefully shutdown the servers
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
 
-	// Start the server
-	e.Logger.Fatal(e.Start(":8080"))
+	// Create a deadline for server shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Shutdown servers with context
+	if err := httpServer.Shutdown(); err != nil {
+		log.Printf("Error shutting down HTTP server: %v", err)
+	}
+	if err := mqttServer.Shutdown(); err != nil {
+		log.Printf("Error shutting down MQTT server: %v", err)
+	}
+
+	<-ctx.Done()
+	log.Println("Servers shutdown complete")
 }
