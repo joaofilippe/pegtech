@@ -8,14 +8,23 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joaofilippe/pegtech/application/services"
 	"github.com/joaofilippe/pegtech/infra/api"
 	"github.com/joaofilippe/pegtech/infra/mqtt"
 )
 
 func main() {
+	// Initialize services
+	lockerService := services.NewLockerService()
+
+	// Register some initial lockers
+	lockerService.RegisterLocker("L001", "small")
+	lockerService.RegisterLocker("L002", "medium")
+	lockerService.RegisterLocker("L003", "large")
+
 	// Create servers
-	httpServer := api.NewHTTPServer()
-	mqttServer := mqtt.NewMQTTServer()
+	httpServer := api.NewHTTPServer(lockerService)
+	mqttServer := mqtt.NewMQTTServer(lockerService)
 
 	// Start MQTT server
 	go func() {

@@ -1,4 +1,4 @@
-package services
+package iservices
 
 import (
 	irepositories "github.com/joaofilippe/pegtech/application/domain/repositories"

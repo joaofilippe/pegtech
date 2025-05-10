@@ -1,6 +1,10 @@
 package mqtt
 
 import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/joaofilippe/pegtech/application/services"
 	mqtt "github.com/mochi-mqtt/server/v2"
 	"github.com/mochi-mqtt/server/v2/hooks/auth"
 	"github.com/mochi-mqtt/server/v2/listeners"
@@ -8,10 +12,17 @@ import (
 )
 
 type MQTTServer struct {
-	server *mqtt.Server
+	server        *mqtt.Server
+	lockerService *services.LockerService
 }
 
-func NewMQTTServer() *MQTTServer {
+type LockerCommand struct {
+	Action   string `json:"action"` // "open" or "status"
+	LockerID string `json:"locker_id"`
+	Password string `json:"password,omitempty"`
+}
+
+func NewMQTTServer(lockerService *services.LockerService) *MQTTServer {
 	// Create the new MQTT Server.
 	server := mqtt.New(&mqtt.Options{
 		InlineClient: true, // Enable the inline client for direct publishing
@@ -30,8 +41,36 @@ func NewMQTTServer() *MQTTServer {
 		panic(err)
 	}
 
-	return &MQTTServer{
-		server: server,
+	mqttServer := &MQTTServer{
+		server:        server,
+		lockerService: lockerService,
+	}
+
+	// Subscribe to locker commands
+	mqttServer.Subscribe("locker/+/command", mqttServer.handleLockerCommand)
+
+	return mqttServer
+}
+
+func (s *MQTTServer) handleLockerCommand(topic string, payload []byte) {
+	var cmd LockerCommand
+	if err := json.Unmarshal(payload, &cmd); err != nil {
+		fmt.Printf("Error parsing locker command: %v\n", err)
+		return
+	}
+
+	switch cmd.Action {
+	case "open":
+		if err := s.lockerService.OpenLocker(cmd.LockerID, cmd.Password); err != nil {
+			fmt.Printf("Error opening locker: %v\n", err)
+			return
+		}
+		// Publish confirmation
+		s.Publish(fmt.Sprintf("locker/%s/status", cmd.LockerID), []byte(`{"status":"opened"}`))
+	case "status":
+		// Handle status update from locker
+		// This would need to be implemented in the LockerService
+		fmt.Printf("Received status update for locker %s\n", cmd.LockerID)
 	}
 }
 

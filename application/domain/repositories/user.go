@@ -2,7 +2,7 @@ package irepositories
 
 import (
 	"github.com/google/uuid"
-	"github.com/joaofilippe/pegtech/application/entities"
+	"github.com/joaofilippe/pegtech/application/domain/entities"
 )
 
 type IUserRepository interface {

@@ -1,6 +1,6 @@
 package userusecases
 
-import irepositories "github.com/joaofilippe/pegtech/application/repositories"
+import irepositories "github.com/joaofilippe/pegtech/application/domain/repositories"
 
 type CreateUserCase struct {
 	repo irepositories.IUserRepository
