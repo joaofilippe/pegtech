@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/joaofilippe/pegtech/domain/iservices"
-	"github.com/labstack/echo/v4"
+	"github.com/joaofilippe/pegtech/infra/http"
 )
 
 // Router handles all API routes
@@ -25,7 +25,8 @@ func NewRouter(
 }
 
 // Setup configures all routes
-func (r *Router) Setup(e *echo.Echo)  {
+func (r *Router) Setup(httpServer *http.HTTPServer)  {
+	e := httpServer.Echo()
 	// Register all routes
 	r.userRoutes.Register(e)
 	r.lockerRoutes.Register(e)

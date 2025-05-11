@@ -4,7 +4,6 @@ import (
 	"github.com/joaofilippe/pegtech/application"
 	"github.com/joaofilippe/pegtech/application/api/routes"
 	"github.com/joaofilippe/pegtech/infra/http"
-	"github.com/labstack/echo/v4"
 )
 
 type Api struct {
@@ -17,12 +16,19 @@ func NewApi(
 	application *application.Application,
 	httpServer *http.HTTPServer,
 ) *Api {
-	return &Api{
+	a := &Api{
 		application: application,
 		httpServer:  http.NewHTTPServer(application),
 	}
+	a.registerRoutes()
+	return a
 }
 
-func (a *Api) RegisterRoutes(e *echo.Echo) {
-	a.router.Setup(e)
+func (a *Api) registerRoutes() {
+	a.router = routes.NewRouter(
+		a.application.UserService,
+		a.application.LockerService,
+	)
+	
+	a.router.Setup(a.httpServer)
 }
