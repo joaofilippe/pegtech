@@ -22,11 +22,6 @@ func main() {
 	// Initialize use case
 	lockerService := services.NewLockerService(lockerRepo, packageRepo)
 
-	// Register some initial lockers
-	lockerService.RegisterLocker("L001", "small")
-	lockerService.RegisterLocker("L002", "medium")
-	lockerService.RegisterLocker("L003", "large")
-
 	// Create servers
 	httpServer := http.NewHTTPServer(lockerService)
 	mqttServer := mqtt.NewMQTTServer(lockerService)
