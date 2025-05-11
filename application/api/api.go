@@ -29,6 +29,10 @@ func (a *Api) registerRoutes() {
 		a.application.UserService,
 		a.application.LockerService,
 	)
-	
+
 	a.router.Setup(a.httpServer)
+}
+
+func (a *Api) Start() error {
+	return a.httpServer.Start(":8080")
 }
