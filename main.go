@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/joaofilippe/pegtech/application/services"
-	"github.com/joaofilippe/pegtech/infra/api"
+	"github.com/joaofilippe/pegtech/infra/http"
 	"github.com/joaofilippe/pegtech/infra/mqtt"
 	"github.com/joaofilippe/pegtech/infra/repositories/memory"
 )
@@ -28,7 +28,7 @@ func main() {
 	lockerService.RegisterLocker("L003", "large")
 
 	// Create servers
-	httpServer := api.NewHTTPServer(lockerService)
+	httpServer := http.NewHTTPServer(lockerService)
 	mqttServer := mqtt.NewMQTTServer(lockerService)
 
 	// Start MQTT server
