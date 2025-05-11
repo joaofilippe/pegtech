@@ -1,22 +1,22 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 type PostgresDB struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 func NewPostgresDB(host, port, user, password, dbname string) (*PostgresDB, error) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
-	db, err := sql.Open("postgres", connStr)
+	db, err := sqlx.Connect("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %v", err)
 	}
@@ -26,11 +26,6 @@ func NewPostgresDB(host, port, user, password, dbname string) (*PostgresDB, erro
 	db.SetMaxIdleConns(25)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
-	// Test the connection
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("error connecting to the database: %v", err)
-	}
-
 	return &PostgresDB{db: db}, nil
 }
 
@@ -38,6 +33,6 @@ func (p *PostgresDB) Close() error {
 	return p.db.Close()
 }
 
-func (p *PostgresDB) GetDB() *sql.DB {
+func (p *PostgresDB) GetDB() *sqlx.DB {
 	return p.db
 }
