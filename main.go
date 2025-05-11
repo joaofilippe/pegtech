@@ -34,9 +34,7 @@ func main() {
 	mqttServer := mqtt.NewMQTTServer(lockerService)
 
 	api := api.NewApi(application, httpServer)
-	api
-
-	// Start MQTT server
+		// Start MQTT server
 	go func() {
 		if err := mqttServer.Start(); err != nil {
 			log.Fatalf("Error starting MQTT server: %v", err)
@@ -45,7 +43,7 @@ func main() {
 
 	// Start HTTP server
 	go func() {
-		if err := httpServer.Start(":8080"); err != nil {
+		if err := api.Start(); err != nil {
 			log.Fatalf("Error starting HTTP server: %v", err)
 		}
 	}()
