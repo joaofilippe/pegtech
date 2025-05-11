@@ -10,8 +10,7 @@ import (
 )
 
 type HTTPServer struct {
-	echo        *echo.Echo
-	application *application.Application
+	echo *echo.Echo
 }
 
 func NewHTTPServer(application *application.Application) *HTTPServer {
@@ -19,10 +18,7 @@ func NewHTTPServer(application *application.Application) *HTTPServer {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	server := &HTTPServer{
-		echo:        e,
-		application: application,
-	}
+	server := &HTTPServer{e}
 
 	return server
 }

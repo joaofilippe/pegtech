@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/joaofilippe/pegtech/application"
+	"github.com/joaofilippe/pegtech/application/api"
 	"github.com/joaofilippe/pegtech/application/repositories"
 	"github.com/joaofilippe/pegtech/application/services"
 	"github.com/joaofilippe/pegtech/infra/http"
@@ -31,6 +32,9 @@ func main() {
 	// Create servers
 	httpServer := http.NewHTTPServer(application)
 	mqttServer := mqtt.NewMQTTServer(lockerService)
+
+	api := api.NewApi(application, httpServer)
+	api
 
 	// Start MQTT server
 	go func() {
