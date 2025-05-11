@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	lockerusecases "github.com/joaofilippe/pegtech/domain/usecases/locker"
+	"github.com/joaofilippe/pegtech/application/services"
 	"github.com/joaofilippe/pegtech/infra/api"
 	"github.com/joaofilippe/pegtech/infra/mqtt"
 	"github.com/joaofilippe/pegtech/infra/repositories/memory"
@@ -20,16 +20,16 @@ func main() {
 	packageRepo := memory.NewPackageRepository()
 
 	// Initialize use case
-	lockerUseCase := lockerusecases.NewLockerUseCase(lockerRepo, packageRepo)
+	lockerService := services.NewLockerService(lockerRepo, packageRepo)
 
 	// Register some initial lockers
-	lockerUseCase.RegisterLocker("L001", "small")
-	lockerUseCase.RegisterLocker("L002", "medium")
-	lockerUseCase.RegisterLocker("L003", "large")
+	lockerService.RegisterLocker("L001", "small")
+	lockerService.RegisterLocker("L002", "medium")
+	lockerService.RegisterLocker("L003", "large")
 
 	// Create servers
-	httpServer := api.NewHTTPServer(lockerUseCase)
-	mqttServer := mqtt.NewMQTTServer(lockerUseCase)
+	httpServer := api.NewHTTPServer(lockerService)
+	mqttServer := mqtt.NewMQTTServer(lockerService)
 
 	// Start MQTT server
 	go func() {
