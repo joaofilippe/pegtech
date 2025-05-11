@@ -1,27 +1,56 @@
 package services
 
 import (
-	irepositories "github.com/joaofilippe/pegtech/application/domain/repositories"
-	userusecases "github.com/joaofilippe/pegtech/application/domain/usecases/user"
+	"github.com/joaofilippe/pegtech/domain/entities"
+	"github.com/joaofilippe/pegtech/domain/iservices"
+	irepositories "github.com/joaofilippe/pegtech/domain/irepositories"
+	userusecases "github.com/joaofilippe/pegtech/domain/usecases/user"
 )
 
-type IUserService interface {
-	CreateUser(email string, password string) error
-	//UpdateUser(email string, password string) error
-	//DeleteUser(email string) error
-	//GetUser(email string) (string, error)
-}
-
 type UserService struct {
-	createUseCase *userusecases.CreateUserCase
+	createUseCase  *userusecases.CreateUserCase
+	getByEmailCase *userusecases.GetUserByEmailCase
+	getByIDCase    *userusecases.GetUserByIDCase
+	updateUseCase  *userusecases.UpdateUserCase
+	deleteUseCase  *userusecases.DeleteUserCase
 }
 
-func NewUserService(repo irepositories.IUserRepository) IUserService {
-	createUseCase := userusecases.NewCreateUserCase(repo)
-
-	return &UserService{createUseCase: createUseCase}
+func NewUserService(repo irepositories.UserRepository) iservices.UserService {
+	return &UserService{
+		createUseCase:  userusecases.NewCreateUserCase(repo),
+		getByEmailCase: userusecases.NewGetUserByEmailCase(repo),
+		getByIDCase:    userusecases.NewGetUserByIDCase(repo),
+		updateUseCase:  userusecases.NewUpdateUserCase(repo),
+		deleteUseCase:  userusecases.NewDeleteUserCase(repo),
+	}
 }
 
-func (u *UserService) CreateUser(email string, password string) error {
-	return u.createUseCase.Execute(email, password)
+func (u *UserService) CreateUser(username, email, password string) (*entities.User, error) {
+	input := userusecases.CreateUserInput{
+		Username: username,
+		Email:    email,
+		Password: password,
+	}
+	return u.createUseCase.Execute(input)
+}
+
+func (u *UserService) GetUserByEmail(email string) (*entities.User, error) {
+	return u.getByEmailCase.Execute(email)
+}
+
+func (u *UserService) GetUserByID(id string) (*entities.User, error) {
+	return u.getByIDCase.Execute(id)
+}
+
+func (u *UserService) UpdateUser(id string, username, email string) (*entities.User, error) {
+	input := userusecases.UpdateUserInput{
+		ID:       id,
+		Username: username,
+		Email:    email,
+	}
+	return u.updateUseCase.Execute(input)
+}
+
+func (u *UserService) DeleteUser(id string) error {
+	return u.deleteUseCase.Execute(id)
 }

@@ -6,25 +6,24 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/joaofilippe/pegtech/application/models"
-	"github.com/joaofilippe/pegtech/application/services"
+	lockerusecases "github.com/joaofilippe/pegtech/domain/usecases/locker"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 type HTTPServer struct {
 	echo          *echo.Echo
-	lockerService *services.LockerService
+	lockerUseCase *lockerusecases.LockerUseCase
 }
 
-func NewHTTPServer(lockerService *services.LockerService) *HTTPServer {
+func NewHTTPServer(lockerUseCase *lockerusecases.LockerUseCase) *HTTPServer {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
 	server := &HTTPServer{
 		echo:          e,
-		lockerService: lockerService,
+		lockerUseCase: lockerUseCase,
 	}
 
 	// Employee routes
@@ -39,13 +38,18 @@ func NewHTTPServer(lockerService *services.LockerService) *HTTPServer {
 	return server
 }
 
+type PackageRegistrationRequest struct {
+	TrackingCode string `json:"tracking_code"`
+	Size         string `json:"size"`
+}
+
 func (s *HTTPServer) registerPackage(c echo.Context) error {
-	var reg models.PackageRegistration
-	if err := json.NewDecoder(c.Request().Body).Decode(&reg); err != nil {
+	var req PackageRegistrationRequest
+	if err := json.NewDecoder(c.Request().Body).Decode(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 
-	pkg, err := s.lockerService.RegisterPackage(reg)
+	pkg, err := s.lockerUseCase.RegisterPackage(req.TrackingCode, req.Size)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
@@ -54,7 +58,7 @@ func (s *HTTPServer) registerPackage(c echo.Context) error {
 }
 
 func (s *HTTPServer) getLockers(c echo.Context) error {
-	// This would need to be implemented in the LockerService
+	// This would need to be implemented in the LockerUseCase
 	// For now, returning a placeholder response
 	return c.JSON(http.StatusOK, map[string]string{"message": "List of lockers"})
 }
@@ -65,7 +69,7 @@ func (s *HTTPServer) getPackageInfo(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Tracking code is required"})
 	}
 
-	pickupInfo, err := s.lockerService.GetPackagePickupInfo(trackingCode)
+	pickupInfo, err := s.lockerUseCase.GetPackagePickupInfo(trackingCode)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}

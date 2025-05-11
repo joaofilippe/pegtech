@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/joaofilippe/pegtech/application/services"
+	lockerusecases "github.com/joaofilippe/pegtech/domain/usecases/locker"
 	mqtt "github.com/mochi-mqtt/server/v2"
 	"github.com/mochi-mqtt/server/v2/hooks/auth"
 	"github.com/mochi-mqtt/server/v2/listeners"
@@ -13,7 +13,7 @@ import (
 
 type MQTTServer struct {
 	server        *mqtt.Server
-	lockerService *services.LockerService
+	lockerUseCase *lockerusecases.LockerUseCase
 }
 
 type LockerCommand struct {
@@ -22,7 +22,7 @@ type LockerCommand struct {
 	Password string `json:"password,omitempty"`
 }
 
-func NewMQTTServer(lockerService *services.LockerService) *MQTTServer {
+func NewMQTTServer(lockerUseCase *lockerusecases.LockerUseCase) *MQTTServer {
 	// Create the new MQTT Server.
 	server := mqtt.New(&mqtt.Options{
 		InlineClient: true, // Enable the inline client for direct publishing
@@ -43,7 +43,7 @@ func NewMQTTServer(lockerService *services.LockerService) *MQTTServer {
 
 	mqttServer := &MQTTServer{
 		server:        server,
-		lockerService: lockerService,
+		lockerUseCase: lockerUseCase,
 	}
 
 	// Subscribe to locker commands
@@ -61,7 +61,7 @@ func (s *MQTTServer) handleLockerCommand(topic string, payload []byte) {
 
 	switch cmd.Action {
 	case "open":
-		if err := s.lockerService.OpenLocker(cmd.LockerID, cmd.Password); err != nil {
+		if err := s.lockerUseCase.OpenLocker(cmd.LockerID, cmd.Password); err != nil {
 			fmt.Printf("Error opening locker: %v\n", err)
 			return
 		}
@@ -69,7 +69,7 @@ func (s *MQTTServer) handleLockerCommand(topic string, payload []byte) {
 		s.Publish(fmt.Sprintf("locker/%s/status", cmd.LockerID), []byte(`{"status":"opened"}`))
 	case "status":
 		// Handle status update from locker
-		// This would need to be implemented in the LockerService
+		// This would need to be implemented in the LockerUseCase
 		fmt.Printf("Received status update for locker %s\n", cmd.LockerID)
 	}
 }
