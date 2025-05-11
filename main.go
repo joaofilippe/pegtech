@@ -14,14 +14,27 @@ import (
 	"github.com/joaofilippe/pegtech/application/services"
 	"github.com/joaofilippe/pegtech/infra/http"
 	"github.com/joaofilippe/pegtech/infra/mqtt"
+	"github.com/joaofilippe/pegtech/infra/repositories/database"
 	"github.com/joaofilippe/pegtech/infra/repositories/memory"
 )
 
 func main() {
+
+	db, err := database.NewPostgresDB(
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	)
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+
 	// Initialize repositories
 	lockerRepo := memory.NewLockerRepository()
 	packageRepo := memory.NewPackageRepository()
-	userRepo := repositories.NewUserRepository()
+	userRepo := repositories.NewUserRepository(db)
 
 	// Initialize services
 	lockerService := services.NewLockerService(lockerRepo, packageRepo)

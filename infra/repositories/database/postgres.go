@@ -12,6 +12,10 @@ type PostgresDB struct {
 	db *sqlx.DB
 }
 
+func (d *PostgresDB) DB() *sqlx.DB {
+	return d.db
+}
+
 func NewPostgresDB(host, port, user, password, dbname string) (*PostgresDB, error) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -31,8 +35,4 @@ func NewPostgresDB(host, port, user, password, dbname string) (*PostgresDB, erro
 
 func (p *PostgresDB) Close() error {
 	return p.db.Close()
-}
-
-func (p *PostgresDB) GetDB() *sqlx.DB {
-	return p.db
 }
