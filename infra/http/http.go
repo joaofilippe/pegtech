@@ -6,24 +6,24 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/joaofilippe/pegtech/domain/iservices"
+	"github.com/joaofilippe/pegtech/application"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 type HTTPServer struct {
 	echo          *echo.Echo
-	lockerService iservices.LockerService
+	application *application.Application
 }
 
-func NewHTTPServer(lockerService iservices.LockerService) *HTTPServer {
+func NewHTTPServer(application *application.Application) *HTTPServer {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
 	server := &HTTPServer{
 		echo:          e,
-		lockerService: lockerService,
+		application: application,
 	}
 
 	// Employee routes
@@ -49,7 +49,7 @@ func (s *HTTPServer) registerPackage(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 
-	pkg, err := s.lockerService.RegisterPackage(req.TrackingCode, req.Size)
+	pkg, err := s.application.LockerService.RegisterPackage(req.TrackingCode, req.Size)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
@@ -69,7 +69,7 @@ func (s *HTTPServer) getPackageInfo(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Tracking code is required"})
 	}
 
-	pickupInfo, err := s.lockerService.GetPackagePickupInfo(trackingCode)
+	pickupInfo, err := s.application.LockerService.GetPackagePickupInfo(trackingCode)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}

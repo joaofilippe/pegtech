@@ -3,8 +3,8 @@ package application
 import "github.com/joaofilippe/pegtech/domain/iservices"
 
 type Application struct {
-	userService   iservices.UserService
-	lockerService iservices.LockerService
+	UserService   iservices.UserService
+	LockerService iservices.LockerService
 }
 
 func NewApplication(
@@ -12,7 +12,7 @@ func NewApplication(
 	userService iservices.UserService,
 ) *Application {
 	return &Application{
-		lockerService: lockerService,
-		userService:   userService,
+		LockerService: lockerService,
+		UserService:   userService,
 	}
 }

@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joaofilippe/pegtech/application"
+	"github.com/joaofilippe/pegtech/application/repositories"
 	"github.com/joaofilippe/pegtech/application/services"
 	"github.com/joaofilippe/pegtech/infra/http"
 	"github.com/joaofilippe/pegtech/infra/mqtt"
@@ -18,12 +20,16 @@ func main() {
 	// Initialize repositories
 	lockerRepo := memory.NewLockerRepository()
 	packageRepo := memory.NewPackageRepository()
+	userRepo := repositories.NewUserRepository()
 
-	// Initialize use case
+	// Initialize services
 	lockerService := services.NewLockerService(lockerRepo, packageRepo)
+	userService := services.NewUserService(userRepo)
+
+	application := application.NewApplication(lockerService, userService)
 
 	// Create servers
-	httpServer := http.NewHTTPServer(lockerService)
+	httpServer := http.NewHTTPServer(application)
 	mqttServer := mqtt.NewMQTTServer(lockerService)
 
 	// Start MQTT server
