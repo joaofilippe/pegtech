@@ -32,7 +32,3 @@ func (a *Api) registerRoutes() {
 
 	a.router.Setup(a.httpServer)
 }
-
-func (a *Api) Start() error {
-	return a.httpServer.Start(":8080")
-}
