@@ -13,7 +13,6 @@ import (
 	"github.com/joaofilippe/pegtech/application/repositories"
 	"github.com/joaofilippe/pegtech/application/services"
 	"github.com/joaofilippe/pegtech/infra/http"
-	"github.com/joaofilippe/pegtech/infra/mqtt"
 	"github.com/joaofilippe/pegtech/infra/repositories/database"
 	"github.com/joaofilippe/pegtech/infra/repositories/memory"
 )
@@ -44,15 +43,10 @@ func main() {
 
 	// Create servers
 	httpServer := http.NewHTTPServer(application)
-	mqttServer := mqtt.NewMQTTServer(lockerService)
 
 	api := api.NewApi(application, httpServer)
 		// Start MQTT server
-	go func() {
-		if err := mqttServer.Start(); err != nil {
-			log.Fatalf("Error starting MQTT server: %v", err)
-		}
-	}()
+
 
 	// Start HTTP server
 	go func() {
@@ -74,9 +68,7 @@ func main() {
 	if err := httpServer.Shutdown(); err != nil {
 		log.Printf("Error shutting down HTTP server: %v", err)
 	}
-	if err := mqttServer.Shutdown(); err != nil {
-		log.Printf("Error shutting down MQTT server: %v", err)
-	}
+
 
 	<-ctx.Done()
 	log.Println("Servers shutdown complete")
