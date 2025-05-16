@@ -15,7 +15,15 @@ import (
 	"github.com/joaofilippe/pegtech/infra/http"
 	"github.com/joaofilippe/pegtech/infra/repositories/database"
 	"github.com/joaofilippe/pegtech/infra/repositories/memory"
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	// Carrega o arquivo .env se ele existir
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Arquivo .env não encontrado: %v", err)
+	}
+}
 
 func main() {
 
@@ -45,8 +53,7 @@ func main() {
 	httpServer := http.NewHTTPServer(application)
 
 	api := api.NewApi(application, httpServer)
-		// Start MQTT server
-
+	// Start MQTT server
 
 	// Start HTTP server
 	go func() {
@@ -68,7 +75,6 @@ func main() {
 	if err := httpServer.Shutdown(); err != nil {
 		log.Printf("Error shutting down HTTP server: %v", err)
 	}
-
 
 	<-ctx.Done()
 	log.Println("Servers shutdown complete")

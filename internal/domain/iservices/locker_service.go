@@ -1,7 +1,7 @@
 package iservices
 
 import (
-	"github.com/joaofilippe/pegtech/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
 )
 
 // LockerService defines the interface for locker operations

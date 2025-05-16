@@ -1,7 +1,7 @@
 package irepositories
 
 import (
-	"github.com/joaofilippe/pegtech/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
 )
 
 // UserRepository defines the interface for user operations
