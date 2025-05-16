@@ -25,11 +25,14 @@ type Package struct {
 		Width  float64
 		Height float64
 	}
-	Status    PackageStatus
-	Sender    *Client
-	Recipient *Client
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Status          PackageStatus
+	Sender          *Client
+	Recipient       *Client
+	Locker          *Locker
+	PickupPassword  string
+	PickupExpiresAt time.Time
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func NewPackage(description string, weight float64, length, width, height float64, sender, recipient *Client) *Package {

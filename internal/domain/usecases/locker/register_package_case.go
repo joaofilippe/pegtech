@@ -3,8 +3,9 @@ package lockerusecases
 import (
 	"time"
 
-	"github.com/joaofilippe/pegtech/domain/entities"
-	"github.com/joaofilippe/pegtech/domain/irepositories"
+	"github.com/google/uuid"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
 
 // RegisterPackageCase handles package registration
@@ -32,20 +33,21 @@ func (uc *RegisterPackageCase) Execute(trackingCode string, size string) (*entit
 	expiresAt := time.Now().Add(24 * time.Hour)
 
 	pkg := &entities.Package{
-		ID:           generateID(),
-		TrackingCode: trackingCode,
-		LockerID:     locker.ID,
-		Password:     password,
-		CreatedAt:    time.Now(),
-		ExpiresAt:    expiresAt,
-		Status:       "registered",
+		ID:              uuid.New(),
+		TrackingCode:    trackingCode,
+		Locker:          locker,
+		PickupPassword:  password,
+		PickupExpiresAt: expiresAt,
+		Status:          entities.PackageStatusPending,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
 	}
 
 	if err := uc.packageRepo.SavePackage(pkg); err != nil {
 		return nil, err
 	}
 
-	if err := uc.lockerRepo.UpdateLockerStatus(locker.ID, entities.LockerOccupied); err != nil {
+	if err := uc.lockerRepo.UpdateLockerStatus(locker.ID.String(), entities.LockerStatusOccupied); err != nil {
 		return nil, err
 	}
 

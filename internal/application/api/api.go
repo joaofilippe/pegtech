@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/joaofilippe/pegtech/application"
-	"github.com/joaofilippe/pegtech/application/api/routes"
-	"github.com/joaofilippe/pegtech/infra/http"
+	"github.com/joaofilippe/pegtech/internal/application"
+	"github.com/joaofilippe/pegtech/internal/application/api/routes"
+	"github.com/joaofilippe/pegtech/internal/infra/http"
 )
 
 type Api struct {
@@ -18,7 +18,7 @@ func NewApi(
 ) *Api {
 	a := &Api{
 		application: application,
-		httpServer:  http.NewHTTPServer(application),
+		httpServer:  http.NewHTTPServer(),
 	}
 	a.registerRoutes()
 	return a

@@ -8,13 +8,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/joaofilippe/pegtech/application"
-	"github.com/joaofilippe/pegtech/application/api"
-	"github.com/joaofilippe/pegtech/application/repositories"
-	"github.com/joaofilippe/pegtech/application/services"
-	"github.com/joaofilippe/pegtech/infra/http"
-	"github.com/joaofilippe/pegtech/infra/repositories/database"
-	"github.com/joaofilippe/pegtech/infra/repositories/memory"
+	"github.com/joaofilippe/pegtech/internal/application"
+	"github.com/joaofilippe/pegtech/internal/application/api"
+	"github.com/joaofilippe/pegtech/internal/application/repositories"
+	"github.com/joaofilippe/pegtech/internal/application/services"
+	"github.com/joaofilippe/pegtech/internal/infra/http"
+	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
 	"github.com/joho/godotenv"
 )
 
@@ -39,8 +38,6 @@ func main() {
 	}
 
 	// Initialize repositories
-	lockerRepo := memory.NewLockerRepository()
-	packageRepo := memory.NewPackageRepository()
 	userRepo := repositories.NewUserRepository(db)
 
 	// Initialize services
@@ -50,7 +47,7 @@ func main() {
 	application := application.NewApplication(lockerService, userService)
 
 	// Create servers
-	httpServer := http.NewHTTPServer(application)
+	httpServer := http.NewHTTPServer()
 
 	api := api.NewApi(application, httpServer)
 	// Start MQTT server

@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/joaofilippe/pegtech/domain/iservices"
-	"github.com/joaofilippe/pegtech/infra/http"
+	"github.com/joaofilippe/pegtech/internal/domain/iservices"
+	"github.com/joaofilippe/pegtech/internal/infra/http"
 )
 
 // Router handles all API routes

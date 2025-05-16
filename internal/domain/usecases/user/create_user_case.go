@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
@@ -43,7 +44,7 @@ func (uc *CreateUserCase) Execute(input CreateUserInput) (*entities.User, error)
 
 	// Create new user
 	user := &entities.User{
-		ID:        generateID(),
+		ID:        uuid.New(),
 		Username:  input.Username,
 		Email:     input.Email,
 		Password:  input.Password, // Note: In a real application, this should be hashed

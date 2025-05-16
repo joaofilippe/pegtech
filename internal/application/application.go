@@ -1,6 +1,6 @@
 package application
 
-import "github.com/joaofilippe/pegtech/domain/iservices"
+import "github.com/joaofilippe/pegtech/internal/domain/iservices"
 
 type Application struct {
 	UserService   iservices.UserService

@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
-	"github.com/joaofilippe/pegtech/domain/entities"
-	"github.com/joaofilippe/pegtech/domain/iservices"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/iservices"
 	"github.com/labstack/echo/v4"
 )
 

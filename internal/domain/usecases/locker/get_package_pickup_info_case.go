@@ -1,8 +1,8 @@
 package lockerusecases
 
 import (
-	"github.com/joaofilippe/pegtech/domain/entities"
-	"github.com/joaofilippe/pegtech/domain/irepositories"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
 
 // GetPackagePickupInfoCase handles retrieving package pickup information
@@ -25,8 +25,8 @@ func (uc *GetPackagePickupInfoCase) Execute(trackingCode string) (*entities.Pack
 	}
 
 	return &entities.PackagePickup{
-		LockerID:  pkg.LockerID,
-		Password:  pkg.Password,
-		ExpiresAt: pkg.ExpiresAt,
+		LockerID:  pkg.Locker.ID,
+		Password:  pkg.PickupPassword,
+		ExpiresAt: pkg.PickupExpiresAt,
 	}, nil
 }

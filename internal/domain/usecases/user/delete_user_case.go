@@ -1,7 +1,7 @@
 package userusecases
 
 import (
-	"github.com/joaofilippe/pegtech/domain/irepositories"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
 
 // DeleteUserCase handles user deletion

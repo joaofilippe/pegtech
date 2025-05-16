@@ -1,8 +1,8 @@
 package lockerusecases
 
 import (
-	"github.com/joaofilippe/pegtech/domain/entities"
-	"github.com/joaofilippe/pegtech/domain/irepositories"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
 
 // OpenLockerCase handles locker opening
@@ -31,13 +31,13 @@ func (uc *OpenLockerCase) Execute(lockerID string, password string) error {
 		return ErrInvalidPassword
 	}
 
-	if pkg.Password != password {
+	if pkg.PickupPassword != password {
 		return ErrInvalidPassword
 	}
 
-	if err := uc.lockerRepo.UpdateLockerStatus(lockerID, entities.LockerAvailable); err != nil {
+	if err := uc.lockerRepo.UpdateLockerStatus(lockerID, entities.LockerStatusAvailable); err != nil {
 		return err
 	}
 
-	return uc.packageRepo.DeletePackage(pkg.ID)
+	return uc.packageRepo.DeletePackage(pkg.ID.String())
 }

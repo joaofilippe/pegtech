@@ -3,8 +3,8 @@ package userusecases
 import (
 	"time"
 
-	"github.com/joaofilippe/pegtech/domain/entities"
-	"github.com/joaofilippe/pegtech/domain/irepositories"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
 
 // UpdateUserInput defines the input for updating a user

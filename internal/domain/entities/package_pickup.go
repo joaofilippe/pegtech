@@ -2,6 +2,8 @@ package entities
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type PackagePickup struct {
@@ -9,4 +11,6 @@ type PackagePickup struct {
 	Locker     *Locker
 	PickupCode string
 	ExpiresAt  time.Time
+	LockerID   uuid.UUID
+	Password   string
 }

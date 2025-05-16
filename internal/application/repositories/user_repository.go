@@ -1,9 +1,9 @@
 package repositories
 
 import (
-	"github.com/joaofilippe/pegtech/domain/entities"
-	"github.com/joaofilippe/pegtech/domain/irepositories"
-	"github.com/joaofilippe/pegtech/infra/repositories/database"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
+	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
 )
 
 // UserRepository implements the UserRepository interface using PostgreSQL

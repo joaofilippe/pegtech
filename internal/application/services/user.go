@@ -1,10 +1,10 @@
 package services
 
 import (
-	"github.com/joaofilippe/pegtech/domain/entities"
-	"github.com/joaofilippe/pegtech/domain/iservices"
-	irepositories "github.com/joaofilippe/pegtech/domain/irepositories"
-	userusecases "github.com/joaofilippe/pegtech/domain/usecases/user"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/iservices"
+	irepositories "github.com/joaofilippe/pegtech/internal/domain/irepositories"
+	userusecases "github.com/joaofilippe/pegtech/internal/domain/usecases/user"
 )
 
 type UserService struct {

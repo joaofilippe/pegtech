@@ -1,10 +1,10 @@
 package services
 
 import (
-	"github.com/joaofilippe/pegtech/domain/entities"
-	irepositories "github.com/joaofilippe/pegtech/domain/irepositories"
-	"github.com/joaofilippe/pegtech/domain/iservices"
-	lockerusecases "github.com/joaofilippe/pegtech/domain/usecases/locker"
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	irepositories "github.com/joaofilippe/pegtech/internal/domain/irepositories"
+	"github.com/joaofilippe/pegtech/internal/domain/iservices"
+	lockerusecases "github.com/joaofilippe/pegtech/internal/domain/usecases/locker"
 )
 
 type LockerService struct {
@@ -60,5 +60,6 @@ func (s *LockerService) OpenLocker(lockerID string, password string) error {
 }
 
 func (s *LockerService) ListLockers() ([]*entities.Locker, error) {
-	return s.listLockersCase.Execute()
+	lockers, err := s.listLockersCase.Execute()
+	return lockers, err
 }

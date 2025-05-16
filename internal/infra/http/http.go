@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/joaofilippe/pegtech/application"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -13,7 +12,7 @@ type HTTPServer struct {
 	echo *echo.Echo
 }
 
-func NewHTTPServer(application *application.Application) *HTTPServer {
+func NewHTTPServer() *HTTPServer {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
