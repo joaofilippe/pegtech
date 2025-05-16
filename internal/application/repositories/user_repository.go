@@ -1,39 +1,43 @@
 package repositories
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
-	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
 )
 
-// UserRepository implements the UserRepository interface using PostgreSQL
+var (
+	ErrUserNotFound = errors.New("user not found")
+)
+
 type UserRepository struct {
 	db *database.PostgresDB
 }
 
-// NewUserRepository creates a new instance of UserRepository
-func NewUserRepository(db *database.PostgresDB) irepositories.UserRepository {
+func NewUserRepository(db *database.PostgresDB) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
 }
 
-// SaveUser saves a user to the database
 func (r *UserRepository) SaveUser(user *entities.User) error {
-	db := r.db.DB()
-
 	query := `
-		INSERT INTO users (id, username, email, password, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO users (id, username, name, email, password, type, active, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		ON CONFLICT (id) DO UPDATE
-		SET username = $2, email = $3, password = $4, updated_at = $6
+		SET username = $2, name = $3, email = $4, password = $5, type = $6, active = $7, updated_at = $9
 	`
 
-	_, err := db.Exec(query,
+	_, err := r.db.DB().Exec(query,
 		user.ID,
 		user.Username,
+		user.Name,
 		user.Email,
 		user.Password,
+		user.Type,
+		user.Active,
 		user.CreatedAt,
 		user.UpdatedAt,
 	)
@@ -41,40 +45,131 @@ func (r *UserRepository) SaveUser(user *entities.User) error {
 	return err
 }
 
-// GetUserByEmail retrieves a user by their email
+func (r *UserRepository) GetUser(id string) (*entities.User, error) {
+	query := `
+		SELECT id, username, name, email, password, type, active, created_at, updated_at
+		FROM users
+		WHERE id = $1
+	`
+
+	user := &entities.User{}
+	err := r.db.DB().QueryRow(query, id).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.Type,
+		&user.Active,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, ErrUserNotFound
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (r *UserRepository) GetUserByEmail(email string) (*entities.User, error) {
-	var user entities.User
-	db := r.db.DB()
+	query := `
+		SELECT id, username, name, email, password, type, active, created_at, updated_at
+		FROM users
+		WHERE email = $1
+	`
 
-	query := `SELECT * FROM users WHERE email = $1`
+	user := &entities.User{}
+	err := r.db.DB().QueryRow(query, email).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.Type,
+		&user.Active,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
 
-	err := db.Get(&user, query, email)
+	if err == sql.ErrNoRows {
+		return nil, ErrUserNotFound
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
-// GetUserByID retrieves a user by their ID
-func (r *UserRepository) GetUserByID(id string) (*entities.User, error) {
-	var user entities.User
-	db := r.db.DB()
-	query := `SELECT * FROM users WHERE id = $1`
+func (r *UserRepository) ListUsers() ([]*entities.User, error) {
+	query := `
+		SELECT id, username, name, email, password, type, active, created_at, updated_at
+		FROM users
+		ORDER BY created_at DESC
+	`
 
-	err := db.Get(&user, query, id)
+	rows, err := r.db.DB().Query(query)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &user, nil
+	var users []*entities.User
+	for rows.Next() {
+		user := &entities.User{}
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Name,
+			&user.Email,
+			&user.Password,
+			&user.Type,
+			&user.Active,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
-// DeleteUser removes a user from the database
 func (r *UserRepository) DeleteUser(id string) error {
-	db := r.db.DB()
-	query := `DELETE FROM users WHERE id = $1`
+	query := `
+		DELETE FROM users
+		WHERE id = $1
+	`
 
-	_, err := db.Exec(query, id)
-	return err
+	result, err := r.db.DB().Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
+}
+
+func (r *UserRepository) GetUserByID(id string) (*entities.User, error) {
+	return r.GetUser(id)
 }

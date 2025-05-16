@@ -39,6 +39,8 @@ func main() {
 
 	// Initialize repositories
 	userRepo := repositories.NewUserRepository(db)
+	lockerRepo := repositories.NewLockerRepository(db)
+	packageRepo := repositories.NewPackageRepository(db)
 
 	// Initialize services
 	lockerService := services.NewLockerService(lockerRepo, packageRepo)
