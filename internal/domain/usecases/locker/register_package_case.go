@@ -35,6 +35,7 @@ func (uc *RegisterPackageCase) Execute(trackingCode string, size string) (*entit
 	pkg := &entities.Package{
 		ID:              uuid.New(),
 		TrackingCode:    trackingCode,
+		Description:     "Package in locker",
 		Locker:          locker,
 		PickupPassword:  password,
 		PickupExpiresAt: expiresAt,

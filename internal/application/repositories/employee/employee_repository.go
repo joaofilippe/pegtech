@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
 )
 
@@ -12,36 +13,25 @@ var (
 	ErrEmployeeNotFound = errors.New("employee not found")
 )
 
+// EmployeeRepository implements the EmployeeRepository interface
 type EmployeeRepository struct {
 	db *database.PostgresDB
 }
 
-func NewEmployeeRepository(db *database.PostgresDB) *EmployeeRepository {
+// NewEmployeeRepository creates a new instance of EmployeeRepository
+func NewEmployeeRepository(db *database.PostgresDB) irepositories.EmployeeRepository {
 	return &EmployeeRepository{
 		db: db,
 	}
 }
 
+// SaveEmployee saves an employee to the storage
 func (r *EmployeeRepository) SaveEmployee(employee *entities.Employee) error {
-	query := `
-		INSERT INTO employees (
-			id, username, name, email, password, type, active,
-			role, created_at, updated_at
-		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		ON CONFLICT (id) DO UPDATE
-		SET username = $2, name = $3, email = $4, password = $5,
-			type = $6, active = $7, role = $8, updated_at = $10
-	`
-
-	_, err := r.db.DB().Exec(query,
+	_, err := r.db.DB().Exec(SaveEmployeeQuery,
 		employee.ID,
-		employee.Username,
 		employee.Name,
 		employee.Email,
 		employee.Password,
-		employee.Type,
-		employee.Active,
 		employee.Role,
 		employee.CreatedAt,
 		employee.UpdatedAt,
@@ -50,23 +40,14 @@ func (r *EmployeeRepository) SaveEmployee(employee *entities.Employee) error {
 	return err
 }
 
+// GetEmployee retrieves an employee by ID
 func (r *EmployeeRepository) GetEmployee(id string) (*entities.Employee, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active,
-			role, created_at, updated_at
-		FROM employees
-		WHERE id = $1
-	`
-
 	employee := &entities.Employee{}
-	err := r.db.DB().QueryRow(query, id).Scan(
+	err := r.db.DB().QueryRow(GetEmployeeQuery, id).Scan(
 		&employee.ID,
-		&employee.Username,
 		&employee.Name,
 		&employee.Email,
 		&employee.Password,
-		&employee.Type,
-		&employee.Active,
 		&employee.Role,
 		&employee.CreatedAt,
 		&employee.UpdatedAt,
@@ -83,23 +64,14 @@ func (r *EmployeeRepository) GetEmployee(id string) (*entities.Employee, error) 
 	return employee, nil
 }
 
+// GetEmployeeByEmail retrieves an employee by email
 func (r *EmployeeRepository) GetEmployeeByEmail(email string) (*entities.Employee, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active,
-			role, created_at, updated_at
-		FROM employees
-		WHERE email = $1
-	`
-
 	employee := &entities.Employee{}
-	err := r.db.DB().QueryRow(query, email).Scan(
+	err := r.db.DB().QueryRow(GetEmployeeByEmailQuery, email).Scan(
 		&employee.ID,
-		&employee.Username,
 		&employee.Name,
 		&employee.Email,
 		&employee.Password,
-		&employee.Type,
-		&employee.Active,
 		&employee.Role,
 		&employee.CreatedAt,
 		&employee.UpdatedAt,
@@ -116,15 +88,9 @@ func (r *EmployeeRepository) GetEmployeeByEmail(email string) (*entities.Employe
 	return employee, nil
 }
 
+// ListEmployees retrieves all employees
 func (r *EmployeeRepository) ListEmployees() ([]*entities.Employee, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active,
-			role, created_at, updated_at
-		FROM employees
-		ORDER BY created_at DESC
-	`
-
-	rows, err := r.db.DB().Query(query)
+	rows, err := r.db.DB().Query(ListEmployeesQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +101,9 @@ func (r *EmployeeRepository) ListEmployees() ([]*entities.Employee, error) {
 		employee := &entities.Employee{}
 		err := rows.Scan(
 			&employee.ID,
-			&employee.Username,
 			&employee.Name,
 			&employee.Email,
 			&employee.Password,
-			&employee.Type,
-			&employee.Active,
 			&employee.Role,
 			&employee.CreatedAt,
 			&employee.UpdatedAt,
@@ -158,13 +121,9 @@ func (r *EmployeeRepository) ListEmployees() ([]*entities.Employee, error) {
 	return employees, nil
 }
 
+// DeleteEmployee deletes an employee by ID
 func (r *EmployeeRepository) DeleteEmployee(id string) error {
-	query := `
-		DELETE FROM employees
-		WHERE id = $1
-	`
-
-	result, err := r.db.DB().Exec(query, id)
+	result, err := r.db.DB().Exec(DeleteEmployeeQuery, id)
 	if err != nil {
 		return err
 	}

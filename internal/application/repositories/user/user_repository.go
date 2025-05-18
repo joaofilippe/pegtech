@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
 )
 
@@ -12,32 +13,26 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
+// UserRepository implements the UserRepository interface
 type UserRepository struct {
 	db *database.PostgresDB
 }
 
-func NewUserRepository(db *database.PostgresDB) *UserRepository {
+// NewUserRepository creates a new instance of UserRepository
+func NewUserRepository(db *database.PostgresDB) irepositories.UserRepository {
 	return &UserRepository{
 		db: db,
 	}
 }
 
+// SaveUser saves a user to the storage
 func (r *UserRepository) SaveUser(user *entities.User) error {
-	query := `
-		INSERT INTO users (id, username, name, email, password, type, active, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		ON CONFLICT (id) DO UPDATE
-		SET username = $2, name = $3, email = $4, password = $5, type = $6, active = $7, updated_at = $9
-	`
-
-	_, err := r.db.DB().Exec(query,
+	_, err := r.db.DB().Exec(SaveUserQuery,
 		user.ID,
-		user.Username,
 		user.Name,
 		user.Email,
 		user.Password,
 		user.Type,
-		user.Active,
 		user.CreatedAt,
 		user.UpdatedAt,
 	)
@@ -45,22 +40,15 @@ func (r *UserRepository) SaveUser(user *entities.User) error {
 	return err
 }
 
+// GetUser retrieves a user by ID
 func (r *UserRepository) GetUser(id string) (*entities.User, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active, created_at, updated_at
-		FROM users
-		WHERE id = $1
-	`
-
 	user := &entities.User{}
-	err := r.db.DB().QueryRow(query, id).Scan(
+	err := r.db.DB().QueryRow(GetUserQuery, id).Scan(
 		&user.ID,
-		&user.Username,
 		&user.Name,
 		&user.Email,
 		&user.Password,
 		&user.Type,
-		&user.Active,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -76,22 +64,15 @@ func (r *UserRepository) GetUser(id string) (*entities.User, error) {
 	return user, nil
 }
 
+// GetUserByEmail retrieves a user by email
 func (r *UserRepository) GetUserByEmail(email string) (*entities.User, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active, created_at, updated_at
-		FROM users
-		WHERE email = $1
-	`
-
 	user := &entities.User{}
-	err := r.db.DB().QueryRow(query, email).Scan(
+	err := r.db.DB().QueryRow(GetUserByEmailQuery, email).Scan(
 		&user.ID,
-		&user.Username,
 		&user.Name,
 		&user.Email,
 		&user.Password,
 		&user.Type,
-		&user.Active,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -107,14 +88,9 @@ func (r *UserRepository) GetUserByEmail(email string) (*entities.User, error) {
 	return user, nil
 }
 
+// ListUsers retrieves all users
 func (r *UserRepository) ListUsers() ([]*entities.User, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active, created_at, updated_at
-		FROM users
-		ORDER BY created_at DESC
-	`
-
-	rows, err := r.db.DB().Query(query)
+	rows, err := r.db.DB().Query(ListUsersQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -125,12 +101,10 @@ func (r *UserRepository) ListUsers() ([]*entities.User, error) {
 		user := &entities.User{}
 		err := rows.Scan(
 			&user.ID,
-			&user.Username,
 			&user.Name,
 			&user.Email,
 			&user.Password,
 			&user.Type,
-			&user.Active,
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		)
@@ -147,13 +121,9 @@ func (r *UserRepository) ListUsers() ([]*entities.User, error) {
 	return users, nil
 }
 
+// DeleteUser deletes a user by ID
 func (r *UserRepository) DeleteUser(id string) error {
-	query := `
-		DELETE FROM users
-		WHERE id = $1
-	`
-
-	result, err := r.db.DB().Exec(query, id)
+	result, err := r.db.DB().Exec(DeleteUserQuery, id)
 	if err != nil {
 		return err
 	}
@@ -170,6 +140,26 @@ func (r *UserRepository) DeleteUser(id string) error {
 	return nil
 }
 
+// GetUserByID retrieves a user by ID
 func (r *UserRepository) GetUserByID(id string) (*entities.User, error) {
-	return r.GetUser(id)
+	user := &entities.User{}
+	err := r.db.DB().QueryRow(GetUserQuery, id).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.Type,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, ErrUserNotFound
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

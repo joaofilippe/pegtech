@@ -10,10 +10,13 @@ import (
 
 	"github.com/joaofilippe/pegtech/internal/application"
 	"github.com/joaofilippe/pegtech/internal/application/api"
-	"github.com/joaofilippe/pegtech/internal/application/repositories"
+	locker_repositories "github.com/joaofilippe/pegtech/internal/application/repositories/locker"
+	package_repositories "github.com/joaofilippe/pegtech/internal/application/repositories/package"
+	user_repositories "github.com/joaofilippe/pegtech/internal/application/repositories/user"
 	"github.com/joaofilippe/pegtech/internal/application/services"
 	"github.com/joaofilippe/pegtech/internal/infra/http"
 	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
+	"github.com/joaofilippe/pegtech/internal/infra/repositories/mqtt"
 	"github.com/joho/godotenv"
 )
 
@@ -25,6 +28,15 @@ func init() {
 }
 
 func main() {
+
+	mqttClient, err := mqtt.NewClient(
+		os.Getenv("MQTT_BROKER"),
+		os.Getenv("MQTT_CLIENT_ID"),
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("Error connecting to MQTT: %v", err)
+	}
 
 	db, err := database.NewPostgresDB(
 		os.Getenv("DB_HOST"),
@@ -38,9 +50,9 @@ func main() {
 	}
 
 	// Initialize repositories
-	userRepo := repositories.NewUserRepository(db)
-	lockerRepo := repositories.NewLockerRepository(db)
-	packageRepo := repositories.NewPackageRepository(db)
+	userRepo := user_repositories.NewUserRepository(db)
+	lockerRepo := locker_repositories.NewLockerRepository(db, mqttClient)
+	packageRepo := package_repositories.NewPackageRepository(db)
 
 	// Initialize services
 	lockerService := services.NewLockerService(lockerRepo, packageRepo)

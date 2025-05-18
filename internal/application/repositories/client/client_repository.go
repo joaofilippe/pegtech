@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
 )
 
@@ -12,37 +13,24 @@ var (
 	ErrClientNotFound = errors.New("client not found")
 )
 
+// ClientRepository implements the ClientRepository interface
 type ClientRepository struct {
 	db *database.PostgresDB
 }
 
-func NewClientRepository(db *database.PostgresDB) *ClientRepository {
+// NewClientRepository creates a new instance of ClientRepository
+func NewClientRepository(db *database.PostgresDB) irepositories.ClientRepository {
 	return &ClientRepository{
 		db: db,
 	}
 }
 
+// SaveClient saves a client to the storage
 func (r *ClientRepository) SaveClient(client *entities.Client) error {
-	query := `
-		INSERT INTO clients (
-			id, username, name, email, password, type, active,
-			phone, address, created_at, updated_at
-		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-		ON CONFLICT (id) DO UPDATE
-		SET username = $2, name = $3, email = $4, password = $5,
-			type = $6, active = $7, phone = $8, address = $9,
-			updated_at = $11
-	`
-
-	_, err := r.db.DB().Exec(query,
+	_, err := r.db.DB().Exec(SaveClientQuery,
 		client.ID,
-		client.Username,
 		client.Name,
 		client.Email,
-		client.Password,
-		client.Type,
-		client.Active,
 		client.Phone,
 		client.Address,
 		client.CreatedAt,
@@ -52,23 +40,13 @@ func (r *ClientRepository) SaveClient(client *entities.Client) error {
 	return err
 }
 
+// GetClient retrieves a client by ID
 func (r *ClientRepository) GetClient(id string) (*entities.Client, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active,
-			phone, address, created_at, updated_at
-		FROM clients
-		WHERE id = $1
-	`
-
 	client := &entities.Client{}
-	err := r.db.DB().QueryRow(query, id).Scan(
+	err := r.db.DB().QueryRow(GetClientQuery, id).Scan(
 		&client.ID,
-		&client.Username,
 		&client.Name,
 		&client.Email,
-		&client.Password,
-		&client.Type,
-		&client.Active,
 		&client.Phone,
 		&client.Address,
 		&client.CreatedAt,
@@ -86,23 +64,13 @@ func (r *ClientRepository) GetClient(id string) (*entities.Client, error) {
 	return client, nil
 }
 
+// GetClientByEmail retrieves a client by email
 func (r *ClientRepository) GetClientByEmail(email string) (*entities.Client, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active,
-			phone, address, created_at, updated_at
-		FROM clients
-		WHERE email = $1
-	`
-
 	client := &entities.Client{}
-	err := r.db.DB().QueryRow(query, email).Scan(
+	err := r.db.DB().QueryRow(GetClientByEmailQuery, email).Scan(
 		&client.ID,
-		&client.Username,
 		&client.Name,
 		&client.Email,
-		&client.Password,
-		&client.Type,
-		&client.Active,
 		&client.Phone,
 		&client.Address,
 		&client.CreatedAt,
@@ -120,15 +88,9 @@ func (r *ClientRepository) GetClientByEmail(email string) (*entities.Client, err
 	return client, nil
 }
 
+// ListClients retrieves all clients
 func (r *ClientRepository) ListClients() ([]*entities.Client, error) {
-	query := `
-		SELECT id, username, name, email, password, type, active,
-			phone, address, created_at, updated_at
-		FROM clients
-		ORDER BY created_at DESC
-	`
-
-	rows, err := r.db.DB().Query(query)
+	rows, err := r.db.DB().Query(ListClientsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -139,12 +101,8 @@ func (r *ClientRepository) ListClients() ([]*entities.Client, error) {
 		client := &entities.Client{}
 		err := rows.Scan(
 			&client.ID,
-			&client.Username,
 			&client.Name,
 			&client.Email,
-			&client.Password,
-			&client.Type,
-			&client.Active,
 			&client.Phone,
 			&client.Address,
 			&client.CreatedAt,
@@ -163,13 +121,9 @@ func (r *ClientRepository) ListClients() ([]*entities.Client, error) {
 	return clients, nil
 }
 
+// DeleteClient deletes a client by ID
 func (r *ClientRepository) DeleteClient(id string) error {
-	query := `
-		DELETE FROM clients
-		WHERE id = $1
-	`
-
-	result, err := r.db.DB().Exec(query, id)
+	result, err := r.db.DB().Exec(DeleteClientQuery, id)
 	if err != nil {
 		return err
 	}

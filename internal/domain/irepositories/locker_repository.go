@@ -8,6 +8,7 @@ import (
 type LockerRepository interface {
 	SaveLocker(locker *entities.Locker) error
 	GetAvailableLocker(size string) (*entities.Locker, error)
+	GetAvailableLockers(size string) ([]*entities.Locker, error)
 	GetLocker(id string) (*entities.Locker, error)
 	UpdateLockerStatus(id string, status entities.LockerStatus) error
 	ListLockers() ([]*entities.Locker, error)

@@ -8,6 +8,7 @@ import (
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
+	"github.com/joaofilippe/pegtech/internal/infra/repositories/mqtt"
 )
 
 var (
@@ -17,25 +18,20 @@ var (
 // LockerRepository implements the LockerRepository interface
 type LockerRepository struct {
 	db *database.PostgresDB
+	mqtt *mqtt.MqttClient
 }
 
 // NewLockerRepository creates a new instance of LockerRepository
-func NewLockerRepository(db *database.PostgresDB) irepositories.LockerRepository {
+func NewLockerRepository(db *database.PostgresDB, mqtt *mqtt.MqttClient) irepositories.LockerRepository {
 	return &LockerRepository{
 		db: db,
+		mqtt: mqtt,
 	}
 }
 
 // SaveLocker saves a locker to the storage
 func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
-	query := `
-		INSERT INTO lockers (id, number, size, location, status, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		ON CONFLICT (id) DO UPDATE
-		SET number = $2, size = $3, location = $4, status = $5, updated_at = $7
-	`
-
-	_, err := r.db.DB().Exec(query,
+	_, err := r.db.DB().Exec(SaveLockerQuery,
 		locker.ID,
 		locker.Number,
 		locker.Size,
@@ -50,15 +46,8 @@ func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
 
 // GetAvailableLocker retrieves an available locker by size
 func (r *LockerRepository) GetAvailableLocker(size string) (*entities.Locker, error) {
-	query := `
-		SELECT id, number, size, location, status, created_at, updated_at
-		FROM lockers
-		WHERE status = $1 AND size = $2
-		LIMIT 1
-	`
-
 	locker := &entities.Locker{}
-	err := r.db.DB().QueryRow(query, entities.LockerStatusAvailable, size).Scan(
+	err := r.db.DB().QueryRow(GetAvailableLockerQuery, entities.LockerStatusAvailable, size).Scan(
 		&locker.ID,
 		&locker.Number,
 		&locker.Size,
@@ -81,14 +70,8 @@ func (r *LockerRepository) GetAvailableLocker(size string) (*entities.Locker, er
 
 // GetLocker retrieves a locker by ID
 func (r *LockerRepository) GetLocker(id string) (*entities.Locker, error) {
-	query := `
-		SELECT id, number, size, location, status, created_at, updated_at
-		FROM lockers
-		WHERE id = $1
-	`
-
 	locker := &entities.Locker{}
-	err := r.db.DB().QueryRow(query, id).Scan(
+	err := r.db.DB().QueryRow(GetLockerQuery, id).Scan(
 		&locker.ID,
 		&locker.Number,
 		&locker.Size,
@@ -111,13 +94,7 @@ func (r *LockerRepository) GetLocker(id string) (*entities.Locker, error) {
 
 // UpdateLockerStatus updates the status of a locker
 func (r *LockerRepository) UpdateLockerStatus(id string, status entities.LockerStatus) error {
-	query := `
-		UPDATE lockers
-		SET status = $1, updated_at = $2
-		WHERE id = $3
-	`
-
-	result, err := r.db.DB().Exec(query, status, time.Now(), id)
+	result, err := r.db.DB().Exec(UpdateLockerStatusQuery, status, time.Now(), id)
 	if err != nil {
 		return err
 	}
@@ -136,13 +113,40 @@ func (r *LockerRepository) UpdateLockerStatus(id string, status entities.LockerS
 
 // ListLockers retrieves all lockers
 func (r *LockerRepository) ListLockers() ([]*entities.Locker, error) {
-	query := `
-		SELECT id, number, size, location, status, created_at, updated_at
-		FROM lockers
-		ORDER BY number
-	`
+	rows, err := r.db.DB().Query(ListLockersQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	rows, err := r.db.DB().Query(query)
+	var lockers []*entities.Locker
+	for rows.Next() {
+		locker := &entities.Locker{}
+		err := rows.Scan(
+			&locker.ID,
+			&locker.Number,
+			&locker.Size,
+			&locker.Location,
+			&locker.Status,
+			&locker.CreatedAt,
+			&locker.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		lockers = append(lockers, locker)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return lockers, nil
+}
+
+// GetAvailableLockers retrieves all available lockers by size
+func (r *LockerRepository) GetAvailableLockers(size string) ([]*entities.Locker, error) {
+	rows, err := r.db.DB().Query(GetAvailableLockersQuery, entities.LockerStatusAvailable, size)
 	if err != nil {
 		return nil, err
 	}

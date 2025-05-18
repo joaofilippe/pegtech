@@ -13,6 +13,7 @@ const (
 type Package struct {
 	ID           string    `json:"id"`
 	TrackingCode string    `json:"tracking_code"`
+	Description  string    `json:"description"`
 	LockerID     string    `json:"locker_id"`
 	Password     string    `json:"password"`
 	CreatedAt    time.Time `json:"created_at"`
