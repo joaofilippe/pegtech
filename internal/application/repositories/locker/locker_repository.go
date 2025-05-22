@@ -141,8 +141,8 @@ func (r *LockerRepository) ListLockers() ([]*entities.Locker, error) {
 }
 
 // GetAvailableLockers retrieves all available lockers by size
-func (r *LockerRepository) GetAvailableLockers(size string) ([]*entities.Locker, error) {
-	rows, err := r.db.DB().Query(GetAvailableLockersQuery, entities.LockerStatusAvailable, size)
+func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
+	rows, err := r.db.DB().Query(GetAvailableLockersQuery, entities.LockerStatusAvailable)
 	if err != nil {
 		return nil, err
 	}
@@ -169,5 +169,5 @@ func (r *LockerRepository) GetAvailableLockers(size string) ([]*entities.Locker,
 		return nil, err
 	}
 
-	return lockers, nil
+	return nil, nil
 }

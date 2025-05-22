@@ -6,15 +6,10 @@ import (
 )
 
 // generatePassword generates a random password
-func generatePassword() string {
+func generatePassword() (string, error) {
 	bytes := make([]byte, 4)
-	rand.Read(bytes)
-	return hex.EncodeToString(bytes)
-}
-
-// generateID generates a random ID
-func generateID() string {
-	bytes := make([]byte, 8)
-	rand.Read(bytes)
-	return hex.EncodeToString(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }

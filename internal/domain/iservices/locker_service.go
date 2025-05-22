@@ -8,7 +8,7 @@ import (
 // LockerService defines the interface for locker operations
 type LockerService interface {
 	RegisterLocker(id int) error
-	GetAvailableLocker(size string) (*entities.Locker, error)
+	GetAvailableLockers() ([]int, error)
 	GetLocker(id int) (*entities.Locker, error)
 	UpdateLockerStatus(id int, status entities.LockerStatus) error
 	RegisterPackage(userID uuid.UUID, lockerID, expirationTime int) (*entities.Package, error)

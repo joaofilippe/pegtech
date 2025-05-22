@@ -18,6 +18,11 @@ type LockerService struct {
 	listLockersCase        *lockerusecases.ListLockersCase
 }
 
+// GetAvailableLockers implements iservices.LockerService.
+func (s *LockerService) GetAvailableLockers() ([]int, error) {
+	panic("unimplemented")
+}
+
 func NewLockerService(lockerRepo irepositories.LockerRepository, packageRepo irepositories.PackageRepository) iservices.LockerService {
 	return &LockerService{
 		registerLockerCase:     lockerusecases.NewRegisterLockerCase(lockerRepo),
@@ -32,10 +37,6 @@ func NewLockerService(lockerRepo irepositories.LockerRepository, packageRepo ire
 
 func (s *LockerService) RegisterLocker(id int) error {
 	return s.registerLockerCase.Execute(id)
-}
-
-func (s *LockerService) GetAvailableLocker(size string) (*entities.Locker, error) {
-	return s.getAvailableLockerCase.Execute(size)
 }
 
 func (s *LockerService) GetLocker(id int) (*entities.Locker, error) {

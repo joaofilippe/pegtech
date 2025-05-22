@@ -49,9 +49,7 @@ func (r *LockerRoutes) registerLocker(c echo.Context) error {
 
 // getAvailableLocker handles retrieval of available lockers by size
 func (r *LockerRoutes) getAvailableLocker(c echo.Context) error {
-	size := c.Param("size")
-
-	locker, err := r.lockerService.GetAvailableLocker(size)
+	locker, err := r.lockerService.GetAvailableLockers()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}

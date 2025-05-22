@@ -29,7 +29,10 @@ func (uc *RegisterPackageCase) Execute(userID uuid.UUID, lockerID, expirationTim
 		return nil, err
 	}
 
-	password := generatePassword()
+	password, err := generatePassword()
+	if err != nil {
+		return nil, err
+	}
 	expiresAt := time.Now().Add(24 * time.Hour)
 
 	pkg := &entities.Package{
