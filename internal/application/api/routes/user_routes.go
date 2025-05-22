@@ -5,7 +5,6 @@ import (
 
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // UserRoutes handles all user-related routes
@@ -108,28 +107,19 @@ func (r *UserRoutes) deleteUser(c echo.Context) error {
 
 // login handles user authentication
 func (r *UserRoutes) login(c echo.Context) error {
-	var LoginInput struct {
+	var input struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	if err := c.Bind(&LoginInput); err != nil {
+	if err := c.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := r.userService.GetUserByEmail(LoginInput.Email)
+	response, err := r.userService.Login(input.Email, input.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid credentials")
 	}
 
-	// Compare the provided password with the stored hash
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(LoginInput.Password))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid credentials")
-	}
-
-	// Remove sensitive information before sending response
-	user.Password = ""
-
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, response)
 }

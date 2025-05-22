@@ -2,6 +2,7 @@ package iservices
 
 import (
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	userusecases "github.com/joaofilippe/pegtech/internal/domain/usecases/user"
 )
 
 // UserService defines the interface for user operations
@@ -20,4 +21,7 @@ type UserService interface {
 
 	// DeleteUser removes a user from the system
 	DeleteUser(id string) error
+
+	// Login authenticates a user and returns a JWT token
+	Login(email, password string) (*userusecases.LoginResponse, error)
 }
