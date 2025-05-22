@@ -32,17 +32,17 @@ func (r *UserRoutes) Register(e *echo.Echo) {
 
 // createUser handles user creation
 func (r *UserRoutes) createUser(c echo.Context) error {
-	var input struct {
+	var CreateUserInput struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	if err := c.Bind(&input); err != nil {
+	if err := c.Bind(&CreateUserInput); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := r.userService.CreateUser(input.Username, input.Email, input.Password)
+	user, err := r.userService.CreateUser(CreateUserInput.Username, CreateUserInput.Email, CreateUserInput.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -108,22 +108,22 @@ func (r *UserRoutes) deleteUser(c echo.Context) error {
 
 // login handles user authentication
 func (r *UserRoutes) login(c echo.Context) error {
-	var input struct {
+	var LoginInput struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	if err := c.Bind(&input); err != nil {
+	if err := c.Bind(&LoginInput); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := r.userService.GetUserByEmail(input.Email)
+	user, err := r.userService.GetUserByEmail(LoginInput.Email)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid credentials")
 	}
 
 	// Compare the provided password with the stored hash
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(LoginInput.Password))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid credentials")
 	}
