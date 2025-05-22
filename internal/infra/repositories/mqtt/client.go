@@ -4,7 +4,9 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -14,29 +16,24 @@ type MqttClient struct {
 }
 
 // NewClient cria e conecta um cliente MQTT ao broker externo
-func NewClient(broker, clientID string, caCertPath *string) (*MqttClient, error) {
+func NewClient(broker, port, protocol, username, password, clientID, caCertPath string) (*MqttClient, error) {
+	connectAddress := fmt.Sprintf("%s://%s:%s", protocol, broker, port)
+	tlsConfig := loadTLSConfig(caCertPath)
+
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(broker)
+	opts.AddBroker(connectAddress)
 	opts.SetClientID(clientID)
-
-	// Se um caminho para o certificado CA for fornecido, configura TLS
-	if caCertPath != nil {
-		caCert, err := os.ReadFile(*caCertPath)
-		if err != nil {
-			return nil, fmt.Errorf("erro ao ler CA: %w", err)
-		}
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-
-		tlsConfig := &tls.Config{
-			RootCAs: caCertPool,
-		}
-		opts.SetTLSConfig(tlsConfig)
-	}
+	opts.SetKeepAlive(time.Second * 60)
+	opts.SetUsername(username)
+	opts.SetPassword(password)
+	opts.SetTLSConfig(tlsConfig)
+	opts.SetKeepAlive(time.Second * 60)
 
 	client := mqtt.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		return nil, token.Error()
+	token := client.Connect()
+
+	if token.WaitTimeout(3*time.Second) && token.Error() != nil {
+		log.Fatal(token.Error())
 	}
 
 	return &MqttClient{client: client}, nil
@@ -66,4 +63,19 @@ func (c *MqttClient) Subscribe(topic string, handler func([]byte)) error {
 // Disconnect desconecta o cliente
 func (c *MqttClient) Disconnect() {
 	c.client.Disconnect(250)
+}
+
+func loadTLSConfig(caFile string) *tls.Config {
+	var tlsConfig tls.Config
+	tlsConfig.InsecureSkipVerify = false
+	if caFile != "" {
+		certpool := x509.NewCertPool()
+		ca, err := os.ReadFile(caFile)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		certpool.AppendCertsFromPEM(ca)
+		tlsConfig.RootCAs = certpool
+	}
+	return &tlsConfig
 }

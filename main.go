@@ -31,8 +31,12 @@ func main() {
 
 	mqttClient, err := mqtt.NewClient(
 		os.Getenv("MQTT_BROKER"),
+		os.Getenv("MQTT_PORT"),
+		os.Getenv("MQTT_PROTOCOL"),
+		os.Getenv("MQTT_USERNAME"),
+		os.Getenv("MQTT_PASSWORD"),
 		os.Getenv("MQTT_CLIENT_ID"),
-		nil,
+		os.Getenv("MQTT_CA_CERT"),
 	)
 	if err != nil {
 		log.Fatalf("Error connecting to MQTT: %v", err)

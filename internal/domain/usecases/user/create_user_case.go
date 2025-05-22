@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateUserInput defines the input for creating a new user
@@ -29,6 +30,15 @@ func NewCreateUserCase(userRepo irepositories.UserRepository) *CreateUserCase {
 	}
 }
 
+// hashPassword creates a bcrypt hash of the password
+func hashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
 // Execute performs the user creation operation
 func (uc *CreateUserCase) Execute(input CreateUserInput) (*entities.User, error) {
 	// Validate input
@@ -42,12 +52,18 @@ func (uc *CreateUserCase) Execute(input CreateUserInput) (*entities.User, error)
 		return nil, ErrUserAlreadyExists
 	}
 
+	// Hash the password
+	hashedPassword, err := hashPassword(input.Password)
+	if err != nil {
+		return nil, err
+	}
+
 	// Create new user
 	user := &entities.User{
 		ID:        uuid.New(),
 		Username:  input.Username,
 		Email:     input.Email,
-		Password:  input.Password, // Note: In a real application, this should be hashed
+		Password:  hashedPassword,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
