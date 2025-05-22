@@ -11,7 +11,6 @@ type LockerService interface {
 	GetLocker(id string) (*entities.Locker, error)
 	UpdateLockerStatus(id string, status entities.LockerStatus) error
 	RegisterPackage(trackingCode string, size string) (*entities.Package, error)
-	GetPackagePickupInfo(trackingCode string) (*entities.PackagePickup, error)
 	OpenLocker(lockerID string, password string) error
 	ListLockers() ([]*entities.Locker, error)
 }

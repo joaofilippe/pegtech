@@ -28,7 +28,7 @@ type Locker struct {
 	Location      string
 	Status        LockerStatus
 	Package       *Package
-	Client        *Client
+	Client        *User
 	ReservedAt    *time.Time
 	OccupiedAt    *time.Time
 	OccupiedUntil *time.Time
@@ -48,7 +48,7 @@ func NewLocker(number, size, location string) *Locker {
 	}
 }
 
-func (l *Locker) Reserve(client *Client) error {
+func (l *Locker) Reserve(client *User) error {
 	if l.Status != LockerStatusAvailable {
 		return ErrLockerNotAvailable
 	}

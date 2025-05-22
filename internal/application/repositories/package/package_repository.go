@@ -47,7 +47,7 @@ func (r *PackageRepository) SavePackage(pkg *entities.Package) error {
 // GetPackage retrieves a package by ID
 func (r *PackageRepository) GetPackage(id string) (*entities.Package, error) {
 	pkg := &entities.Package{
-		Recipient: &entities.Client{},
+		Recipient: &entities.User{},
 		Locker:    &entities.Locker{},
 	}
 
@@ -78,7 +78,7 @@ func (r *PackageRepository) GetPackage(id string) (*entities.Package, error) {
 // GetPackageByTrackingCode retrieves a package by tracking code
 func (r *PackageRepository) GetPackageByTrackingCode(trackingCode string) (*entities.Package, error) {
 	pkg := &entities.Package{
-		Recipient: &entities.Client{},
+		Recipient: &entities.User{},
 		Locker:    &entities.Locker{},
 	}
 
@@ -117,7 +117,7 @@ func (r *PackageRepository) ListPackages() ([]*entities.Package, error) {
 	var packages []*entities.Package
 	for rows.Next() {
 		pkg := &entities.Package{
-			Recipient: &entities.Client{},
+			Recipient: &entities.User{},
 			Locker:    &entities.Locker{},
 		}
 
@@ -205,7 +205,7 @@ func (r *PackageRepository) GetPackagesByClientID(clientID string) ([]*entities.
 	var packages []*entities.Package
 	for rows.Next() {
 		pkg := &entities.Package{
-			Recipient: &entities.Client{},
+			Recipient: &entities.User{},
 			Locker:    &entities.Locker{},
 		}
 
@@ -262,7 +262,7 @@ func (r *PackageRepository) GetPackagesByLockerID(lockerID string) ([]*entities.
 	var packages []*entities.Package
 	for rows.Next() {
 		pkg := &entities.Package{
-			Recipient: &entities.Client{},
+			Recipient: &entities.User{},
 			Locker:    &entities.Locker{},
 		}
 

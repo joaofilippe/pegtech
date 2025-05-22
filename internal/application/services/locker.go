@@ -13,7 +13,6 @@ type LockerService struct {
 	getLockerCase          *lockerusecases.GetLockerCase
 	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
 	registerPackageCase    *lockerusecases.RegisterPackageCase
-	getPackagePickupCase   *lockerusecases.GetPackagePickupInfoCase
 	openLockerCase         *lockerusecases.OpenLockerCase
 	listLockersCase        *lockerusecases.ListLockersCase
 }
@@ -25,7 +24,6 @@ func NewLockerService(lockerRepo irepositories.LockerRepository, packageRepo ire
 		getLockerCase:          lockerusecases.NewGetLockerCase(lockerRepo),
 		updateLockerStatusCase: lockerusecases.NewUpdateLockerStatusCase(lockerRepo),
 		registerPackageCase:    lockerusecases.NewRegisterPackageCase(lockerRepo, packageRepo),
-		getPackagePickupCase:   lockerusecases.NewGetPackagePickupInfoCase(packageRepo),
 		openLockerCase:         lockerusecases.NewOpenLockerCase(lockerRepo, packageRepo),
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),
 	}
@@ -49,10 +47,6 @@ func (s *LockerService) UpdateLockerStatus(id string, status entities.LockerStat
 
 func (s *LockerService) RegisterPackage(trackingCode string, size string) (*entities.Package, error) {
 	return s.registerPackageCase.Execute(trackingCode, size)
-}
-
-func (s *LockerService) GetPackagePickupInfo(trackingCode string) (*entities.PackagePickup, error) {
-	return s.getPackagePickupCase.Execute(trackingCode)
 }
 
 func (s *LockerService) OpenLocker(lockerID string, password string) error {

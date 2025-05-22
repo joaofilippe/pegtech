@@ -20,7 +20,7 @@ type Package struct {
 	TrackingCode    string
 	Description     string
 	Status          PackageStatus
-	Recipient       *Client
+	Recipient       *User
 	Locker          *Locker
 	PickupPassword  string
 	PickupExpiresAt time.Time
@@ -28,7 +28,7 @@ type Package struct {
 	UpdatedAt       time.Time
 }
 
-func NewPackage(description string, recipient *Client) *Package {
+func NewPackage(description string, recipient *User) *Package {
 	return &Package{
 		ID:           uuid.New(),
 		TrackingCode: generateTrackingCode(),

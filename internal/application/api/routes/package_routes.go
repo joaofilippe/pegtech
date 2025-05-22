@@ -22,7 +22,6 @@ func NewPackageRoutes(lockerService iservices.LockerService) *PackageRoutes {
 // Register registers all package routes
 func (r *PackageRoutes) Register(e *echo.Echo) {
 	e.POST("/packages", r.registerPackage)
-	e.GET("/packages/:trackingCode/pickup", r.getPackagePickupInfo)
 	e.POST("/lockers/:lockerID/open", r.openLocker)
 }
 
@@ -43,18 +42,6 @@ func (r *PackageRoutes) registerPackage(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, pkg)
-}
-
-// getPackagePickupInfo handles retrieval of package pickup information
-func (r *PackageRoutes) getPackagePickupInfo(c echo.Context) error {
-	trackingCode := c.Param("trackingCode")
-
-	pickupInfo, err := r.lockerService.GetPackagePickupInfo(trackingCode)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, pickupInfo)
 }
 
 // openLocker handles locker opening for package pickup

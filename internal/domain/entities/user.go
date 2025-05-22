@@ -18,6 +18,7 @@ type User struct {
 	Username  string
 	Name      string
 	Email     string
+	Phone     string
 	Password  string
 	Type      UserType
 	Active    bool

@@ -1,8 +1,6 @@
 package userusecases
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,6 +14,7 @@ type CreateUserInput struct {
 	Username string
 	Email    string
 	Password string
+	Type     entities.UserType
 }
 
 // CreateUserCase handles user creation
