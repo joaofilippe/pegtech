@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
@@ -32,15 +33,14 @@ func (r *LockerRoutes) Register(e *echo.Echo) {
 // registerLocker handles locker registration
 func (r *LockerRoutes) registerLocker(c echo.Context) error {
 	var input struct {
-		ID   string `json:"id"`
-		Size string `json:"size"`
+		ID int `json:"id"`
 	}
 
 	if err := c.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := r.lockerService.RegisterLocker(input.ID, input.Size); err != nil {
+	if err := r.lockerService.RegisterLocker(input.ID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -62,8 +62,12 @@ func (r *LockerRoutes) getAvailableLocker(c echo.Context) error {
 // getLocker handles locker retrieval by ID
 func (r *LockerRoutes) getLocker(c echo.Context) error {
 	id := c.Param("id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid locker ID")
+	}
 
-	locker, err := r.lockerService.GetLocker(id)
+	locker, err := r.lockerService.GetLocker(idInt)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
@@ -83,7 +87,12 @@ func (r *LockerRoutes) updateLockerStatus(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := r.lockerService.UpdateLockerStatus(id, entities.LockerStatus(input.Status)); err != nil {
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid locker ID")
+	}
+
+	if err := r.lockerService.UpdateLockerStatus(idInt, entities.LockerStatus(input.Status)); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

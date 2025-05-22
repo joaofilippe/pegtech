@@ -8,7 +8,7 @@ import (
 // UserService defines the interface for user operations
 type UserService interface {
 	// CreateUser creates a new user in the system
-	CreateUser(username, email, password string) (*entities.User, error)
+	CreateUser(username, name, email, password, phone string, userType entities.UserType) (*entities.User, error)
 
 	// GetUserByEmail retrieves a user by their email
 	GetUserByEmail(email string) (*entities.User, error)

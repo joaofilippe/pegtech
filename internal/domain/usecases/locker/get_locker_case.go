@@ -18,6 +18,6 @@ func NewGetLockerCase(lockerRepo irepositories.LockerRepository) *GetLockerCase 
 }
 
 // Execute performs the locker retrieval operation
-func (uc *GetLockerCase) Execute(id string) (*entities.Locker, error) {
+func (uc *GetLockerCase) Execute(id int) (*entities.Locker, error) {
 	return uc.lockerRepo.GetLocker(id)
 }

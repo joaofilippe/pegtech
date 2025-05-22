@@ -23,8 +23,8 @@ func NewRegisterPackageCase(lockerRepo irepositories.LockerRepository, packageRe
 }
 
 // Execute performs the package registration operation
-func (uc *RegisterPackageCase) Execute(trackingCode string, size string) (*entities.Package, error) {
-	locker, err := uc.lockerRepo.GetAvailableLocker(size)
+func (uc *RegisterPackageCase) Execute(userID uuid.UUID, lockerID, expirationTime int) (*entities.Package, error) {
+	locker, err := uc.lockerRepo.GetLocker(lockerID)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,6 @@ func (uc *RegisterPackageCase) Execute(trackingCode string, size string) (*entit
 
 	pkg := &entities.Package{
 		ID:              uuid.New(),
-		TrackingCode:    trackingCode,
 		Description:     "Package in locker",
 		Locker:          locker,
 		PickupPassword:  password,
@@ -48,7 +47,7 @@ func (uc *RegisterPackageCase) Execute(trackingCode string, size string) (*entit
 		return nil, err
 	}
 
-	if err := uc.lockerRepo.UpdateLockerStatus(locker.ID.String(), entities.LockerStatusOccupied); err != nil {
+	if err := uc.lockerRepo.UpdateLockerStatus(locker.ID, entities.LockerStatusOccupied); err != nil {
 		return nil, err
 	}
 

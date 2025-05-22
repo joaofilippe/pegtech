@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
 	"github.com/labstack/echo/v4"
 )
@@ -33,20 +34,37 @@ func (r *UserRoutes) Register(e *echo.Echo) {
 func (r *UserRoutes) createUser(c echo.Context) error {
 	var CreateUserInput struct {
 		Username string `json:"username"`
+		Name     string `json:"name"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Phone    string `json:"phone"`
+		Type     string `json:"type"`
 	}
 
 	if err := c.Bind(&CreateUserInput); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := r.userService.CreateUser(CreateUserInput.Username, CreateUserInput.Email, CreateUserInput.Password)
+	userType := entities.UserType(CreateUserInput.Type)
+
+	user, err := r.userService.CreateUser(
+		CreateUserInput.Username, 
+		CreateUserInput.Name, 
+		CreateUserInput.Email, 
+		CreateUserInput.Password, 
+		CreateUserInput.Phone, 
+		userType,
+	)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusCreated, user)
+	response := map[string]interface{}{
+		"user_id": user.ID,
+		"message": "User created successfully",
+	}
+
+	return c.JSON(http.StatusCreated, response)
 }
 
 // getUserByID handles user retrieval by ID

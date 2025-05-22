@@ -1,7 +1,6 @@
 package lockerusecases
 
 import (
-	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
@@ -19,16 +18,10 @@ func NewRegisterLockerCase(lockerRepo irepositories.LockerRepository) *RegisterL
 }
 
 // Execute performs the locker registration operation
-func (uc *RegisterLockerCase) Execute(id string, size string) error {
-	lockerID, err := uuid.Parse(id)
-	if err != nil {
-		return err
-	}
-
+func (uc *RegisterLockerCase) Execute(id int) error {
 	locker := &entities.Locker{
-		ID:     lockerID,
+		ID:     id,
 		Status: entities.LockerStatusAvailable,
-		Size:   size,
 	}
 	return uc.lockerRepo.SaveLocker(locker)
 }

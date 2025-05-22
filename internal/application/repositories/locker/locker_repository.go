@@ -34,7 +34,6 @@ func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
 	_, err := r.db.DB().Exec(SaveLockerQuery,
 		locker.ID,
 		locker.Number,
-		locker.Size,
 		locker.Location,
 		locker.Status,
 		locker.CreatedAt,
@@ -50,7 +49,6 @@ func (r *LockerRepository) GetAvailableLocker(size string) (*entities.Locker, er
 	err := r.db.DB().QueryRow(GetAvailableLockerQuery, entities.LockerStatusAvailable, size).Scan(
 		&locker.ID,
 		&locker.Number,
-		&locker.Size,
 		&locker.Location,
 		&locker.Status,
 		&locker.CreatedAt,
@@ -69,12 +67,11 @@ func (r *LockerRepository) GetAvailableLocker(size string) (*entities.Locker, er
 }
 
 // GetLocker retrieves a locker by ID
-func (r *LockerRepository) GetLocker(id string) (*entities.Locker, error) {
+func (r *LockerRepository) GetLocker(id int) (*entities.Locker, error) {
 	locker := &entities.Locker{}
 	err := r.db.DB().QueryRow(GetLockerQuery, id).Scan(
 		&locker.ID,
 		&locker.Number,
-		&locker.Size,
 		&locker.Location,
 		&locker.Status,
 		&locker.CreatedAt,
@@ -93,7 +90,7 @@ func (r *LockerRepository) GetLocker(id string) (*entities.Locker, error) {
 }
 
 // UpdateLockerStatus updates the status of a locker
-func (r *LockerRepository) UpdateLockerStatus(id string, status entities.LockerStatus) error {
+func (r *LockerRepository) UpdateLockerStatus(id int, status entities.LockerStatus) error {
 	result, err := r.db.DB().Exec(UpdateLockerStatusQuery, status, time.Now(), id)
 	if err != nil {
 		return err
@@ -125,7 +122,6 @@ func (r *LockerRepository) ListLockers() ([]*entities.Locker, error) {
 		err := rows.Scan(
 			&locker.ID,
 			&locker.Number,
-			&locker.Size,
 			&locker.Location,
 			&locker.Status,
 			&locker.CreatedAt,
@@ -158,7 +154,6 @@ func (r *LockerRepository) GetAvailableLockers(size string) ([]*entities.Locker,
 		err := rows.Scan(
 			&locker.ID,
 			&locker.Number,
-			&locker.Size,
 			&locker.Location,
 			&locker.Status,
 			&locker.CreatedAt,

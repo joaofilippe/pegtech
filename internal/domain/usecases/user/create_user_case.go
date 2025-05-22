@@ -12,7 +12,9 @@ import (
 // CreateUserInput defines the input for creating a new user
 type CreateUserInput struct {
 	Username string
+	Name     string
 	Email    string
+	Phone    string
 	Password string
 	Type     entities.UserType
 }
@@ -45,6 +47,10 @@ func (uc *CreateUserCase) Execute(input CreateUserInput) (*entities.User, error)
 		return nil, ErrInvalidUserData
 	}
 
+	if input.Type != entities.UserTypeEmployee && input.Type != entities.UserTypeClient {
+		input.Type = entities.UserTypeClient
+	}
+
 	// Check if user already exists
 	existingUser, err := uc.userRepo.GetUserByEmail(input.Email)
 	if err == nil && existingUser != nil {
@@ -60,9 +66,12 @@ func (uc *CreateUserCase) Execute(input CreateUserInput) (*entities.User, error)
 	// Create new user
 	user := &entities.User{
 		ID:        uuid.New(),
+		Name:      input.Name,
+		Phone:     input.Phone,
 		Username:  input.Username,
 		Email:     input.Email,
 		Password:  hashedPassword,
+		Type:      input.Type,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

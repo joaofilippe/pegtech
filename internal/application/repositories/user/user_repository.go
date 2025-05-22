@@ -31,6 +31,8 @@ func (r *UserRepository) SaveUser(user *entities.User) error {
 		user.ID,
 		user.Name,
 		user.Email,
+		user.Username,
+		user.Phone,
 		user.Password,
 		user.Type,
 		user.CreatedAt,

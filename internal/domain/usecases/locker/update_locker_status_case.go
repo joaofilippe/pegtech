@@ -18,7 +18,7 @@ func NewUpdateLockerStatusCase(lockerRepo irepositories.LockerRepository) *Updat
 }
 
 // Execute performs the locker status update operation
-func (uc *UpdateLockerStatusCase) Execute(id string, status entities.LockerStatus) error {
+func (uc *UpdateLockerStatusCase) Execute(id int, status entities.LockerStatus) error {
 	// Check if locker exists
 	_, err := uc.lockerRepo.GetLocker(id)
 	if err != nil {

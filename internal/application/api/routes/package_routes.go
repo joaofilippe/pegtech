@@ -2,7 +2,9 @@ package routes
 
 import (
 	"net/http"
+	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
 	"github.com/labstack/echo/v4"
 )
@@ -28,7 +30,10 @@ func (r *PackageRoutes) Register(e *echo.Echo) {
 // registerPackage handles package registration
 func (r *PackageRoutes) registerPackage(c echo.Context) error {
 	var input struct {
-		TrackingCode string `json:"trackingCode"`
+		UserID       string `json:"user_id"`
+		ExpiresAt    int    `json:"expires_at"`
+		LockerID     int    `json:"locker_id"`
+		TrackingCode string `json:"tracking_code"`
 		Size         string `json:"size"`
 	}
 
@@ -36,7 +41,7 @@ func (r *PackageRoutes) registerPackage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	pkg, err := r.lockerService.RegisterPackage(input.TrackingCode, input.Size)
+	pkg, err := r.lockerService.RegisterPackage(uuid.MustParse(input.UserID), input.LockerID, input.ExpiresAt)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -56,7 +61,12 @@ func (r *PackageRoutes) openLocker(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := r.lockerService.OpenLocker(lockerID, input.Password); err != nil {
+	lockerIDInt, err := strconv.Atoi(lockerID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid locker ID")
+	}
+
+	if err := r.lockerService.OpenLocker(lockerIDInt, input.Password); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

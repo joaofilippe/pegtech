@@ -224,7 +224,6 @@ func (r *PackageRepository) GetPackagesByClientID(clientID string) ([]*entities.
 			&pkg.Recipient.Phone,
 			&pkg.Locker.ID,
 			&pkg.Locker.Number,
-			&pkg.Locker.Size,
 			&pkg.Locker.Location,
 			&pkg.Locker.Status,
 		)
@@ -281,7 +280,6 @@ func (r *PackageRepository) GetPackagesByLockerID(lockerID string) ([]*entities.
 			&pkg.Recipient.Phone,
 			&pkg.Locker.ID,
 			&pkg.Locker.Number,
-			&pkg.Locker.Size,
 			&pkg.Locker.Location,
 			&pkg.Locker.Status,
 		)

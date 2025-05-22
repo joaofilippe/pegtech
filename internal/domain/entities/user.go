@@ -13,6 +13,7 @@ const (
 	UserTypeClient   UserType = "CLIENT"
 )
 
+
 type User struct {
 	ID        uuid.UUID
 	Username  string

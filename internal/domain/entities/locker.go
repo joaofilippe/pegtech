@@ -3,8 +3,6 @@ package entities
 import (
 	"errors"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 var (
@@ -22,9 +20,8 @@ const (
 )
 
 type Locker struct {
-	ID            uuid.UUID
+	ID            int
 	Number        string
-	Size          string
 	Location      string
 	Status        LockerStatus
 	Package       *Package
@@ -36,11 +33,10 @@ type Locker struct {
 	UpdatedAt     time.Time
 }
 
-func NewLocker(number, size, location string) *Locker {
+func NewLocker(id int,number, size, location string) *Locker {
 	return &Locker{
-		ID:        uuid.New(),
+		ID:        id,
 		Number:    number,
-		Size:      size,
 		Location:  location,
 		Status:    LockerStatusAvailable,
 		CreatedAt: time.Now(),

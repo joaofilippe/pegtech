@@ -27,11 +27,14 @@ func NewUserService(repo irepositories.UserRepository,) iservices.UserService {
 	}
 }
 
-func (u *UserService) CreateUser(username, email, password string) (*entities.User, error) {
+func (u *UserService) CreateUser(username, name, email, password, phone string, userType entities.UserType) (*entities.User, error) {
 	input := userusecases.CreateUserInput{
 		Username: username,
+		Name:     name,
 		Email:    email,
 		Password: password,
+		Phone:    phone,
+		Type:     userType,
 	}
 	return u.createUseCase.Execute(input)
 }

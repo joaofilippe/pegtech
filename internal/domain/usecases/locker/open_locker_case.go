@@ -20,13 +20,13 @@ func NewOpenLockerCase(lockerRepo irepositories.LockerRepository, packageRepo ir
 }
 
 // Execute performs the locker opening operation
-func (uc *OpenLockerCase) Execute(lockerID string, password string) error {
+func (uc *OpenLockerCase) Execute(lockerID int, password string) error {
 	_, err := uc.lockerRepo.GetLocker(lockerID)
 	if err != nil {
 		return ErrLockerNotFound
 	}
 
-	pkg, err := uc.packageRepo.GetPackageByTrackingCode(lockerID)
+	pkg, err := uc.packageRepo.GetPackageByTrackingCode("")
 	if err != nil {
 		return ErrInvalidPassword
 	}

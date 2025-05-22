@@ -25,7 +25,7 @@ func NewApi(
 }
 
 func (a *Api) Start() error {
-	return a.httpServer.Start(":8080")
+	return a.httpServer.Start("localhost:8080")
 }
 
 func (a *Api) registerRoutes() {

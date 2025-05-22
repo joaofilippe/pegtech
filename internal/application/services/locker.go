@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	irepositories "github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
@@ -29,27 +30,27 @@ func NewLockerService(lockerRepo irepositories.LockerRepository, packageRepo ire
 	}
 }
 
-func (s *LockerService) RegisterLocker(id string, size string) error {
-	return s.registerLockerCase.Execute(id, size)
+func (s *LockerService) RegisterLocker(id int) error {
+	return s.registerLockerCase.Execute(id)
 }
 
 func (s *LockerService) GetAvailableLocker(size string) (*entities.Locker, error) {
 	return s.getAvailableLockerCase.Execute(size)
 }
 
-func (s *LockerService) GetLocker(id string) (*entities.Locker, error) {
+func (s *LockerService) GetLocker(id int) (*entities.Locker, error) {
 	return s.getLockerCase.Execute(id)
 }
 
-func (s *LockerService) UpdateLockerStatus(id string, status entities.LockerStatus) error {
+func (s *LockerService) UpdateLockerStatus(id int, status entities.LockerStatus) error {
 	return s.updateLockerStatusCase.Execute(id, status)
 }
 
-func (s *LockerService) RegisterPackage(trackingCode string, size string) (*entities.Package, error) {
-	return s.registerPackageCase.Execute(trackingCode, size)
+func (s *LockerService) RegisterPackage(userID uuid.UUID, lockerID, expirationTime int) (*entities.Package, error) {
+	return s.registerPackageCase.Execute(userID, lockerID, expirationTime)
 }
 
-func (s *LockerService) OpenLocker(lockerID string, password string) error {
+func (s *LockerService) OpenLocker(lockerID int, password string) error {
 	return s.openLockerCase.Execute(lockerID, password)
 }
 

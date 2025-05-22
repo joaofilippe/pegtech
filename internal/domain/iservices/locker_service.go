@@ -1,16 +1,17 @@
 package iservices
 
 import (
+	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 )
 
 // LockerService defines the interface for locker operations
 type LockerService interface {
-	RegisterLocker(id string, size string) error
+	RegisterLocker(id int) error
 	GetAvailableLocker(size string) (*entities.Locker, error)
-	GetLocker(id string) (*entities.Locker, error)
-	UpdateLockerStatus(id string, status entities.LockerStatus) error
-	RegisterPackage(trackingCode string, size string) (*entities.Package, error)
-	OpenLocker(lockerID string, password string) error
+	GetLocker(id int) (*entities.Locker, error)
+	UpdateLockerStatus(id int, status entities.LockerStatus) error
+	RegisterPackage(userID uuid.UUID, lockerID, expirationTime int) (*entities.Package, error)
+	OpenLocker(lockerID int, password string) error
 	ListLockers() ([]*entities.Locker, error)
 }
