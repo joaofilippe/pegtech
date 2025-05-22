@@ -22,17 +22,18 @@ const (
 )
 
 type Locker struct {
-	ID         uuid.UUID
-	Number     string
-	Size       string
-	Location   string
-	Status     LockerStatus
-	Package    *Package
-	Client     *Client
-	ReservedAt *time.Time
-	OccupiedAt *time.Time
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID            uuid.UUID
+	Number        string
+	Size          string
+	Location      string
+	Status        LockerStatus
+	Package       *Package
+	Client        *Client
+	ReservedAt    *time.Time
+	OccupiedAt    *time.Time
+	OccupiedUntil *time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 func NewLocker(number, size, location string) *Locker {
