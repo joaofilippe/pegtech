@@ -2,21 +2,25 @@ package lockerusecases
 
 import (
 	"crypto/rand"
-	"encoding/hex"
+	"fmt"
 
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 )
 
-// generatePassword generates a random password
+// generatePassword generates a random numeric password with up to 6 digits
 func generatePassword() (string, error) {
-	bytes := make([]byte, 4)
+	bytes := make([]byte, 3)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(bytes), nil
+
+	num := int(bytes[0])<<16 | int(bytes[1])<<8 | int(bytes[2])
+	num = num % 1000000
+	
+	return fmt.Sprintf("%06d", num), nil
 }
 
-func  getAvailableLocker(lockers []*entities.Locker) (*entities.Locker, error) {
+func getAvailableLocker(lockers []*entities.Locker) (*entities.Locker, error) {
 	for _, locker := range lockers {
 		if locker.Status == entities.LockerStatusAvailable {
 			return locker, nil

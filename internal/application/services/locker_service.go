@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	irepositories "github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
@@ -9,20 +10,12 @@ import (
 
 type LockerService struct {
 	registerLockerCase     *lockerusecases.RegisterLockerCase
+	registerPackageCase    *lockerusecases.RegisterPackageCase
+	reserveLockerCase      *lockerusecases.ReserveLockerCase
 	getAvailableLockerCase *lockerusecases.GetAvailableLockersCase
 	getLockerCase          *lockerusecases.GetLockerCase
 	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
 	listLockersCase        *lockerusecases.ListLockersCase
-}
-
-// OpenLocker implements iservices.LockerService.
-func (s *LockerService) OpenLocker(lockerID int, password string) error {
-	panic("unimplemented")
-}
-
-// GetAvailableLockers implements iservices.LockerService.
-func (s *LockerService) GetAvailableLockers() ([]int, error) {
-	panic("unimplemented")
 }
 
 func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.LockerService {
@@ -32,7 +25,13 @@ func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.Locke
 		getLockerCase:          lockerusecases.NewGetLockerCase(lockerRepo),
 		updateLockerStatusCase: lockerusecases.NewUpdateLockerStatusCase(lockerRepo),
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),
+		reserveLockerCase:      lockerusecases.NewReserveLockerCase(lockerRepo),
 	}
+}
+
+// GetAvailableLockers implements iservices.LockerService.
+func (s *LockerService) GetAvailableLockers() ([]int, error) {
+	return s.getAvailableLockerCase.Execute()
 }
 
 func (s *LockerService) RegisterLocker(id int) error {
@@ -50,4 +49,14 @@ func (s *LockerService) UpdateLockerStatus(id int, status entities.LockerStatus)
 func (s *LockerService) ListLockers() ([]*entities.Locker, error) {
 	lockers, err := s.listLockersCase.Execute()
 	return lockers, err
+}
+
+// ReserveLocker implements iservices.LockerService.
+func (s *LockerService) ReserveLocker(userID uuid.UUID, expirationTime int) (string, error) {
+	return s.reserveLockerCase.Execute(userID, expirationTime)
+}
+
+// RegisterPackage implements iservices.LockerService.
+func (s *LockerService) RegisterPackage(userID uuid.UUID, expirationTime int) (string, error) {
+	return s.registerPackageCase.Execute(userID, expirationTime)
 }
