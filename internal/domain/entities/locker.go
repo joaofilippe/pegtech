@@ -23,13 +23,11 @@ const (
 type Locker struct {
 	ID                     int
 	Number                 string
-	Location               string
 	PackageCode            string
 	PackagePickupPassword  string
 	PackagePickupExpiresAt time.Time
 	PackageUserID          uuid.UUID
 	Status                 LockerStatus
-	Client                 *User
 	ReservedExpiration     *time.Time
 	OccupiedAt             *time.Time
 	OccupiedUntil          *time.Time
@@ -42,7 +40,6 @@ func NewLocker(id int, number, size, location string) *Locker {
 	return &Locker{
 		ID:                    id,
 		Number:                number,
-		Location:              location,
 		Status:                LockerStatusAvailable,
 		CreatedAt:             now,
 		UpdatedAt:             now,
@@ -52,7 +49,6 @@ func NewLocker(id int, number, size, location string) *Locker {
 		PackageCode:           "",
 		PackagePickupPassword: "",
 		PackageUserID:         uuid.Nil,
-		Client:                nil,
 	}
 }
 
@@ -63,7 +59,6 @@ func (l *Locker) Reserve(client *User, expiration *time.Duration) error {
 
 	now := time.Now()
 	l.Status = LockerStatusReserved
-	l.Client = client
 	l.ReservedExpiration = &now
 	if expiration != nil {
 		exp := now.Add(*expiration)

@@ -14,14 +14,6 @@ import (
 
 var (
 	ErrLockerNotFound = errors.New("locker not found")
-
-	UpdateLockerQuery = `
-		UPDATE lockers 
-		SET number = $1,
-			location = $2,
-			status = $3,
-			updated_at = $4
-		WHERE id = $5`
 )
 
 // LockerRepository implements the LockerRepository interface
@@ -43,8 +35,14 @@ func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
 	_, err := r.db.DB().Exec(SaveLockerQuery,
 		locker.ID,
 		locker.Number,
-		locker.Location,
+		locker.PackageCode,
+		locker.PackagePickupPassword,
+		locker.PackagePickupExpiresAt,
+		locker.PackageUserID,
 		locker.Status,
+		locker.ReservedExpiration,
+		locker.OccupiedAt,
+		locker.OccupiedUntil,
 		locker.CreatedAt,
 		locker.UpdatedAt,
 	)
@@ -58,8 +56,14 @@ func (r *LockerRepository) GetAvailableLocker(size string) (*entities.Locker, er
 	err := r.db.DB().QueryRow(GetAvailableLockerQuery, entities.LockerStatusAvailable, size).Scan(
 		&locker.ID,
 		&locker.Number,
-		&locker.Location,
+		&locker.PackageCode,
+		&locker.PackagePickupPassword,
+		&locker.PackagePickupExpiresAt,
+		&locker.PackageUserID,
 		&locker.Status,
+		&locker.ReservedExpiration,
+		&locker.OccupiedAt,
+		&locker.OccupiedUntil,
 		&locker.CreatedAt,
 		&locker.UpdatedAt,
 	)
@@ -81,8 +85,14 @@ func (r *LockerRepository) GetLocker(id int) (*entities.Locker, error) {
 	err := r.db.DB().QueryRow(GetLockerQuery, id).Scan(
 		&locker.ID,
 		&locker.Number,
-		&locker.Location,
+		&locker.PackageCode,
+		&locker.PackagePickupPassword,
+		&locker.PackagePickupExpiresAt,
+		&locker.PackageUserID,
 		&locker.Status,
+		&locker.ReservedExpiration,
+		&locker.OccupiedAt,
+		&locker.OccupiedUntil,
 		&locker.CreatedAt,
 		&locker.UpdatedAt,
 	)
@@ -131,8 +141,14 @@ func (r *LockerRepository) ListLockers() ([]*entities.Locker, error) {
 		err := rows.Scan(
 			&locker.ID,
 			&locker.Number,
-			&locker.Location,
+			&locker.PackageCode,
+			&locker.PackagePickupPassword,
+			&locker.PackagePickupExpiresAt,
+			&locker.PackageUserID,
 			&locker.Status,
+			&locker.ReservedExpiration,
+			&locker.OccupiedAt,
+			&locker.OccupiedUntil,
 			&locker.CreatedAt,
 			&locker.UpdatedAt,
 		)
@@ -163,8 +179,14 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 		err := rows.Scan(
 			&locker.ID,
 			&locker.Number,
-			&locker.Location,
+			&locker.PackageCode,
+			&locker.PackagePickupPassword,
+			&locker.PackagePickupExpiresAt,
+			&locker.PackageUserID,
 			&locker.Status,
+			&locker.ReservedExpiration,
+			&locker.OccupiedAt,
+			&locker.OccupiedUntil,
 			&locker.CreatedAt,
 			&locker.UpdatedAt,
 		)
@@ -210,8 +232,14 @@ func (r *LockerRepository) ReserveLocker(lockerID int, userID uuid.UUID, expirat
 func (r *LockerRepository) UpdateLocker(locker *entities.Locker) error {
 	_, err := r.db.DB().Exec(UpdateLockerQuery,
 		locker.Number,
-		locker.Location,
+		locker.PackageCode,
+		locker.PackagePickupPassword,
+		locker.PackagePickupExpiresAt,
+		locker.PackageUserID,
 		locker.Status,
+		locker.ReservedExpiration,
+		locker.OccupiedAt,
+		locker.OccupiedUntil,
 		locker.UpdatedAt,
 		locker.ID,
 	)
