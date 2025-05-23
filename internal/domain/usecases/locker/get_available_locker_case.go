@@ -15,5 +15,14 @@ func NewGetAvailableLockersCase(lockerRepo irepositories.LockerRepository) *GetA
 }
 
 func (c *GetAvailableLockersCase) Execute() ([]int, error) {
-	return c.lockerRepo.GetAvailableLockers()
+	lockers, err := c.lockerRepo.ListLockers()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(lockers) == 0 {
+		return nil, ErrFoundNoLockers
+	}
+
+	return getAvailableLockerIDs(lockers)
 }

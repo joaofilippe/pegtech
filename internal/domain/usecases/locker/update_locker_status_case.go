@@ -20,10 +20,11 @@ func NewUpdateLockerStatusCase(lockerRepo irepositories.LockerRepository) *Updat
 // Execute performs the locker status update operation
 func (uc *UpdateLockerStatusCase) Execute(id int, status entities.LockerStatus) error {
 	// Check if locker exists
-	_, err := uc.lockerRepo.GetLocker(id)
+	locker, err := uc.lockerRepo.GetLocker(id)
 	if err != nil {
 		return ErrLockerNotFound
 	}
 
-	return uc.lockerRepo.UpdateLockerStatus(id, status)
+	locker.Status = status
+	return uc.lockerRepo.UpdateLocker(locker)
 }

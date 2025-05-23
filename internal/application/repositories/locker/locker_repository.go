@@ -14,6 +14,14 @@ import (
 
 var (
 	ErrLockerNotFound = errors.New("locker not found")
+
+	UpdateLockerQuery = `
+		UPDATE lockers 
+		SET number = $1,
+			location = $2,
+			status = $3,
+			updated_at = $4
+		WHERE id = $5`
 )
 
 // LockerRepository implements the LockerRepository interface
@@ -194,6 +202,18 @@ func (r *LockerRepository) ReserveLocker(lockerID int, userID uuid.UUID, expirat
 		expiration,
 		time.Now(),
 		lockerID,
+	)
+	return err
+}
+
+// UpdateLocker updates a locker in the storage
+func (r *LockerRepository) UpdateLocker(locker *entities.Locker) error {
+	_, err := r.db.DB().Exec(UpdateLockerQuery,
+		locker.Number,
+		locker.Location,
+		locker.Status,
+		locker.UpdatedAt,
+		locker.ID,
 	)
 	return err
 }

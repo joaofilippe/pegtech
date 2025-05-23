@@ -20,25 +20,28 @@ func NewRegisterPackageCase(lockerRepo irepositories.LockerRepository) *Register
 
 // Execute performs the package registration operation
 func (uc *RegisterPackageCase) Execute(userID uuid.UUID, expirationTime int) (string, error) {
-	availableLockers, err := uc.lockerRepo.GetAvailableLockers()
+	lockers, err := uc.lockerRepo.ListLockers()
 	if err != nil {
 		return "", err
 	}
 
-	if len(availableLockers) == 0 {
-		return "", ErrAllLockersOccupied
+	if len(lockers) == 0 {
+		return "", ErrFoundNoLockers
 	}
 
-	lockerID := availableLockers[0]
-
-	locker, err := uc.lockerRepo.GetLocker(lockerID)
+	locker, err := getAvailableLocker(lockers)
 	if err != nil {
 		return "", err
 	}
 
-	if err := uc.lockerRepo.UpdateLockerStatus(locker.ID, entities.LockerStatusOccupied); err != nil {
-		return "", err
+	if locker.Status == entities.LockerStatusOccupied {
+		return "", ErrLockerAlreadyOccupied
 	}
 
 	return "", nil
 }
+
+
+
+
+

@@ -18,11 +18,7 @@ type PackageRegistration struct {
 // LockerRepository defines the interface for locker operations
 type LockerRepository interface {
 	SaveLocker(locker *entities.Locker) error
-	GetAvailableLocker(size string) (*entities.Locker, error)
 	GetLocker(id int) (*entities.Locker, error)
-	UpdateLockerStatus(id int, status entities.LockerStatus) error
 	ListLockers() ([]*entities.Locker, error)
-	GetAvailableLockers() ([]int, error)
-	RegisterPackage(lockerID int, registration entities.PackageRegistration) error
-	ReserveLocker(lockerID int, userID uuid.UUID, expiration *time.Time) error
+	UpdateLocker(locker *entities.Locker) error
 }
