@@ -9,7 +9,7 @@ import (
 
 type LockerService struct {
 	registerLockerCase     *lockerusecases.RegisterLockerCase
-	getAvailableLockerCase *lockerusecases.GetAvailableLockerCase
+	getAvailableLockerCase *lockerusecases.GetAvailableLockersCase
 	getLockerCase          *lockerusecases.GetLockerCase
 	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
 	listLockersCase        *lockerusecases.ListLockersCase
@@ -28,7 +28,7 @@ func (s *LockerService) GetAvailableLockers() ([]int, error) {
 func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.LockerService {
 	return &LockerService{
 		registerLockerCase:     lockerusecases.NewRegisterLockerCase(lockerRepo),
-		getAvailableLockerCase: lockerusecases.NewGetAvailableLockerCase(lockerRepo),
+		getAvailableLockerCase: lockerusecases.NewGetAvailableLockersCase(lockerRepo),
 		getLockerCase:          lockerusecases.NewGetLockerCase(lockerRepo),
 		updateLockerStatusCase: lockerusecases.NewUpdateLockerStatusCase(lockerRepo),
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),

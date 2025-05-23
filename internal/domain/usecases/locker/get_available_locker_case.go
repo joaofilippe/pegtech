@@ -4,16 +4,16 @@ import (
 	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 )
 
-type GetAvailableLockerCase struct {
+type GetAvailableLockersCase struct {
 	lockerRepo irepositories.LockerRepository
 }
 
-func NewGetAvailableLockerCase(lockerRepo irepositories.LockerRepository) *GetAvailableLockerCase {
-	return &GetAvailableLockerCase{
+func NewGetAvailableLockersCase(lockerRepo irepositories.LockerRepository) *GetAvailableLockersCase {
+	return &GetAvailableLockersCase{
 		lockerRepo: lockerRepo,
 	}
 }
 
-func (c *GetAvailableLockerCase) Execute() ([]int, error) {
+func (c *GetAvailableLockersCase) Execute() ([]int, error) {
 	return c.lockerRepo.GetAvailableLockers()
 }
