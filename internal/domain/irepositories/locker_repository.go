@@ -21,4 +21,7 @@ type LockerRepository interface {
 	GetLocker(id int) (*entities.Locker, error)
 	ListLockers() ([]*entities.Locker, error)
 	UpdateLocker(locker *entities.Locker) error
+	RegisterPackage(lockerID int, registration PackageRegistration) error
+	UpdateLockerStatus(id int, status entities.LockerStatus) error
+	ReleaseLocker(id int) error
 }

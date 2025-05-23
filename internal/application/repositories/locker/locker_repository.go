@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -205,10 +206,28 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 }
 
 // RegisterPackage registers a package in a locker
-func (r *LockerRepository) RegisterPackage(lockerID int, registration entities.PackageRegistration) error {
-	r.mqtt.Publish("locker/package/register", []byte(registration.PackageCode))
+func (r *LockerRepository) RegisterPackage(lockerID int, registration irepositories.PackageRegistration) error {
+	var packageMap = make(map[string]interface{})
+	var packageMapInfo = make(map[string]interface{})
+	packageMapInfo["package_code"] = registration.PackageCode
+	packageMapInfo["package_pickup_password"] = registration.PackagePickupPassword
+	packageMapInfo["user_id"] = registration.UserID
+	packageMapInfo["expires_at"] = registration.ExpiresAt
+	packageMapInfo["locker_id"] = lockerID
 
-	_, err := r.db.DB().Exec(RegisterPackageQuery,
+	packageMap["package"] = packageMapInfo
+
+	jsonData, err := json.Marshal(packageMap)
+	if err != nil {
+		return err
+	}
+
+	err = r.mqtt.Publish("locker/package/register", jsonData)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.db.DB().Exec(RegisterPackageQuery,
 		registration.PackageCode,
 		registration.PackagePickupPassword,
 		registration.UserID,
@@ -244,6 +263,23 @@ func (r *LockerRepository) UpdateLocker(locker *entities.Locker) error {
 		locker.OccupiedUntil,
 		locker.UpdatedAt,
 		locker.ID,
+	)
+	return err
+}
+
+// ReleaseLocker releases a locker by clearing its package information and setting it to available
+func (r *LockerRepository) ReleaseLocker(id int) error {
+	_, err := r.db.DB().Exec(ReleaseLockerQuery,
+		"",                             // package_code
+		"",                             // package_pickup_password
+		nil,                            // package_pickup_expires_at
+		nil,                            // package_user_id
+		entities.LockerStatusAvailable, // status
+		nil,                            // reserved_expiration
+		nil,                            // occupied_at
+		nil,                            // occupied_until
+		time.Now(),                     // updated_at
+		id,
 	)
 	return err
 }

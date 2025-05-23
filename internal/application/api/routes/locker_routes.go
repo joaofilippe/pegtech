@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
 	"github.com/labstack/echo/v4"
@@ -28,6 +29,7 @@ func (r *LockerRoutes) Register(e *echo.Echo) {
 	e.GET("/lockers/availables", r.getAvailableLockers)
 	e.PUT("/lockers/:id/status", r.updateLockerStatus)
 	e.GET("/lockers", r.listLockers)
+	e.POST("/lockers/package", r.registerPackage)
 }
 
 // registerLocker handles locker registration
@@ -105,4 +107,33 @@ func (r *LockerRoutes) listLockers(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, lockers)
+}
+
+// registerPackage handles package registration
+func (r *LockerRoutes) registerPackage(c echo.Context) error {
+	var input struct {
+		UserID         string `json:"user_id"`
+		ExpirationTime int    `json:"expiration_time"`
+	}
+
+	if err := c.Bind(&input); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	userID, err := uuid.Parse(input.UserID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID format")
+	}
+
+	packageCode, err := r.lockerService.RegisterPackage(userID, input.ExpirationTime)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	response := map[string]interface{}{
+		"package_code": packageCode,
+		"message":      "Package registered successfully",
+	}
+
+	return c.JSON(http.StatusCreated, response)
 }

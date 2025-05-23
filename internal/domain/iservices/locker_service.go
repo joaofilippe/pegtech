@@ -14,4 +14,5 @@ type LockerService interface {
 	GetLocker(id int) (*entities.Locker, error)
 	UpdateLockerStatus(id int, status entities.LockerStatus) error
 	ListLockers() ([]*entities.Locker, error)
+	ReleaseLocker(id int) error
 }

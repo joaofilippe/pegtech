@@ -16,16 +16,19 @@ type LockerService struct {
 	getLockerCase          *lockerusecases.GetLockerCase
 	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
 	listLockersCase        *lockerusecases.ListLockersCase
+	releaseLockerCase      *lockerusecases.ReleaseLockerCase
 }
 
 func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.LockerService {
 	return &LockerService{
 		registerLockerCase:     lockerusecases.NewRegisterLockerCase(lockerRepo),
+		registerPackageCase:    lockerusecases.NewRegisterPackageCase(lockerRepo),
 		getAvailableLockerCase: lockerusecases.NewGetAvailableLockersCase(lockerRepo),
 		getLockerCase:          lockerusecases.NewGetLockerCase(lockerRepo),
 		updateLockerStatusCase: lockerusecases.NewUpdateLockerStatusCase(lockerRepo),
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),
 		reserveLockerCase:      lockerusecases.NewReserveLockerCase(lockerRepo),
+		releaseLockerCase:      lockerusecases.NewReleaseLockerCase(lockerRepo),
 	}
 }
 
@@ -59,4 +62,8 @@ func (s *LockerService) ReserveLocker(userID uuid.UUID, expirationTime int) (str
 // RegisterPackage implements iservices.LockerService.
 func (s *LockerService) RegisterPackage(userID uuid.UUID, expirationTime int) (string, error) {
 	return s.registerPackageCase.Execute(userID, expirationTime)
+}
+
+func (s *LockerService) ReleaseLocker(id int) error {
+	return s.releaseLockerCase.Execute(id)
 }

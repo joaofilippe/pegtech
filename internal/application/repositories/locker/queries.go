@@ -101,4 +101,17 @@ const (
 			reserved_expiration = $2, 
 			updated_at = $3 
 		WHERE id = $4`
+
+	ReleaseLockerQuery = `
+		UPDATE lockers 
+		SET package_code = $1,
+			package_pickup_password = $2,
+			package_pickup_expires_at = $3,
+			package_user_id = $4,
+			status = $5,
+			reserved_expiration = $6,
+			occupied_at = $7,
+			occupied_until = $8,
+			updated_at = $9
+		WHERE id = $10`
 )
