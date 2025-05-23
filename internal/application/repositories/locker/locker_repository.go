@@ -206,6 +206,8 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 
 // RegisterPackage registers a package in a locker
 func (r *LockerRepository) RegisterPackage(lockerID int, registration entities.PackageRegistration) error {
+	r.mqtt.Publish("locker/package/register", []byte(registration.PackageCode))
+
 	_, err := r.db.DB().Exec(RegisterPackageQuery,
 		registration.PackageCode,
 		registration.PackagePickupPassword,
