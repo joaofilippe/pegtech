@@ -283,3 +283,7 @@ func (r *LockerRepository) ReleaseLocker(id int) error {
 	)
 	return err
 }
+
+func (r *LockerRepository) GetMQTTClient() *mqtt.MqttClient {
+	return r.mqtt
+}

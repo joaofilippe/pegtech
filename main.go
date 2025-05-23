@@ -56,12 +56,6 @@ func main() {
 	userRepo := user_repositories.NewUserRepository(db)
 	lockerRepo := locker_repositories.NewLockerRepository(db, mqttClient)
 
-	// Initialize MQTT subscriber
-	subscriber := mqtt.NewSubscriber(mqttClient)
-	if err := subscriber.Start(); err != nil {
-		log.Printf("Error starting MQTT subscriber: %v", err)
-	}
-
 	// Initialize services
 	lockerService := services.NewLockerService(lockerRepo)
 	userService := services.NewUserService(userRepo)

@@ -15,4 +15,5 @@ type LockerService interface {
 	UpdateLockerStatus(id int, status entities.LockerStatus) error
 	ListLockers() ([]*entities.Locker, error)
 	ReleaseLocker(id int) error
+	StartPackagePickupSubscription() (chan int, error)
 }

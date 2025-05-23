@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"log"
 )
 
@@ -57,8 +58,38 @@ func (s *Subscriber) SubscribeToPackageRegistration() error {
 	})
 }
 
+// SubscribeToPackagePickup subscreve ao tópico de retirada de pacotes
+func (s *Subscriber) SubscribeToPackagePickup() (chan int, error) {
+	lockerChan := make(chan int, 100) // Buffer de 100 mensagens
+
+	err := s.Subscribe("locker/package/pickup", func(topic string, payload []byte) {
+		var pickupData struct {
+			LockerID int `json:"locker_id"`
+		}
+
+		if err := json.Unmarshal(payload, &pickupData); err != nil {
+			log.Printf("Erro ao decodificar mensagem MQTT: %v", err)
+			return
+		}
+
+		// Envia o ID do locker para o canal
+		lockerChan <- pickupData.LockerID
+	})
+
+	if err != nil {
+		close(lockerChan)
+		return nil, err
+	}
+
+	return lockerChan, nil
+}
+
 // Start inicia todas as subscrições
 func (s *Subscriber) Start() error {
-	// Adicione aqui outras subscrições conforme necessário
-	return s.SubscribeToPackageRegistration()
+	// Inicia todas as subscrições
+	if err := s.SubscribeToPackageRegistration(); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,11 +1,14 @@
 package services
 
 import (
+	"log"
+
 	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	irepositories "github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
 	lockerusecases "github.com/joaofilippe/pegtech/internal/domain/usecases/locker"
+	"github.com/joaofilippe/pegtech/internal/infra/repositories/mqtt"
 )
 
 type LockerService struct {
@@ -17,6 +20,7 @@ type LockerService struct {
 	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
 	listLockersCase        *lockerusecases.ListLockersCase
 	releaseLockerCase      *lockerusecases.ReleaseLockerCase
+	mqttClient             *mqtt.MqttClient
 }
 
 func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.LockerService {
@@ -29,6 +33,7 @@ func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.Locke
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),
 		reserveLockerCase:      lockerusecases.NewReserveLockerCase(lockerRepo),
 		releaseLockerCase:      lockerusecases.NewReleaseLockerCase(lockerRepo),
+		mqttClient:             lockerRepo.GetMQTTClient(),
 	}
 }
 
@@ -64,6 +69,31 @@ func (s *LockerService) RegisterPackage(userID uuid.UUID, expirationTime int) (s
 	return s.registerPackageCase.Execute(userID, expirationTime)
 }
 
+// ReleaseLocker implements iservices.LockerService
 func (s *LockerService) ReleaseLocker(id int) error {
 	return s.releaseLockerCase.Execute(id)
+}
+
+// StartPackagePickupSubscription starts listening to package pickup events
+func (s *LockerService) StartPackagePickupSubscription() (chan int, error) {
+	subscriber := mqtt.NewSubscriber(s.mqttClient)
+
+	lockerChan, err := subscriber.SubscribeToPackagePickup()
+	if err != nil {
+		return nil, err
+	}
+
+	// Inicia uma goroutine para processar os IDs dos lockers
+	go func() {
+		for lockerID := range lockerChan {
+			// Libera o locker
+			if err := s.ReleaseLocker(lockerID); err != nil {
+				log.Printf("Erro ao liberar locker %d: %v", lockerID, err)
+				continue
+			}
+			log.Printf("Locker %d liberado após retirada do pacote", lockerID)
+		}
+	}()
+
+	return lockerChan, nil
 }

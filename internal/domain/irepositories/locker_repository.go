@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
+	"github.com/joaofilippe/pegtech/internal/infra/repositories/mqtt"
 )
 
 // PackageRegistration represents the data needed to register a package
@@ -24,4 +25,5 @@ type LockerRepository interface {
 	RegisterPackage(lockerID int, registration PackageRegistration) error
 	UpdateLockerStatus(id int, status entities.LockerStatus) error
 	ReleaseLocker(id int) error
+	GetMQTTClient() *mqtt.MqttClient
 }
