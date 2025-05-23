@@ -9,7 +9,6 @@ import (
 type Router struct {
 	userRoutes    *UserRoutes
 	lockerRoutes  *LockerRoutes
-	packageRoutes *PackageRoutes
 }
 
 // NewRouter creates a new instance of Router
@@ -20,7 +19,6 @@ func NewRouter(
 	return &Router{
 		userRoutes:    NewUserRoutes(userService),
 		lockerRoutes:  NewLockerRoutes(lockerService),
-		packageRoutes: NewPackageRoutes(lockerService),
 	}
 }
 
@@ -30,5 +28,4 @@ func (r *Router) Setup(httpServer *http.HTTPServer)  {
 	// Register all routes
 	r.userRoutes.Register(e)
 	r.lockerRoutes.Register(e)
-	r.packageRoutes.Register(e)
 }

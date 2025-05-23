@@ -24,7 +24,7 @@ func NewLockerRoutes(lockerService iservices.LockerService) *LockerRoutes {
 // Register registers all locker routes
 func (r *LockerRoutes) Register(e *echo.Echo) {
 	e.POST("/lockers", r.registerLocker)
-	e.GET("/lockers/available/:size", r.getAvailableLocker)
+	e.GET("/lockers/availables", r.getAvailableLockers)
 	e.GET("/lockers/:id", r.getLocker)
 	e.PUT("/lockers/:id/status", r.updateLockerStatus)
 	e.GET("/lockers", r.listLockers)
@@ -48,7 +48,7 @@ func (r *LockerRoutes) registerLocker(c echo.Context) error {
 }
 
 // getAvailableLocker handles retrieval of available lockers by size
-func (r *LockerRoutes) getAvailableLocker(c echo.Context) error {
+func (r *LockerRoutes) getAvailableLockers(c echo.Context) error {
 	locker, err := r.lockerService.GetAvailableLockers()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
