@@ -48,11 +48,11 @@ func (r *UserRoutes) createUser(c echo.Context) error {
 	userType := entities.UserType(CreateUserInput.Type)
 
 	user, err := r.userService.CreateUser(
-		CreateUserInput.Username, 
-		CreateUserInput.Name, 
-		CreateUserInput.Email, 
-		CreateUserInput.Password, 
-		CreateUserInput.Phone, 
+		CreateUserInput.Username,
+		CreateUserInput.Name,
+		CreateUserInput.Email,
+		CreateUserInput.Password,
+		CreateUserInput.Phone,
 		userType,
 	)
 	if err != nil {
@@ -81,9 +81,15 @@ func (r *UserRoutes) getUserByID(c echo.Context) error {
 
 // getUserByEmail handles user retrieval by email
 func (r *UserRoutes) getUserByEmail(c echo.Context) error {
-	email := c.Param("email")
+	var GetUserByEmailInput struct {
+		Email string `json:"email"`
+	}
 
-	user, err := r.userService.GetUserByEmail(email)
+	if err := c.Bind(&GetUserByEmailInput); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	user, err := r.userService.GetUserByEmail(GetUserByEmailInput.Email)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}

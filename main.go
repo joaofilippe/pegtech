@@ -11,7 +11,6 @@ import (
 	"github.com/joaofilippe/pegtech/internal/application"
 	"github.com/joaofilippe/pegtech/internal/application/api"
 	locker_repositories "github.com/joaofilippe/pegtech/internal/application/repositories/locker"
-	package_repositories "github.com/joaofilippe/pegtech/internal/application/repositories/package"
 	user_repositories "github.com/joaofilippe/pegtech/internal/application/repositories/user"
 	"github.com/joaofilippe/pegtech/internal/application/services"
 	"github.com/joaofilippe/pegtech/internal/infra/http"
@@ -56,10 +55,9 @@ func main() {
 	// Initialize repositories
 	userRepo := user_repositories.NewUserRepository(db)
 	lockerRepo := locker_repositories.NewLockerRepository(db, mqttClient)
-	packageRepo := package_repositories.NewPackageRepository(db)
 
 	// Initialize services
-	lockerService := services.NewLockerService(lockerRepo, packageRepo)
+	lockerService := services.NewLockerService(lockerRepo)
 	userService := services.NewUserService(userRepo)
 
 	application := application.NewApplication(lockerService, userService)

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	irepositories "github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
@@ -13,9 +12,12 @@ type LockerService struct {
 	getAvailableLockerCase *lockerusecases.GetAvailableLockerCase
 	getLockerCase          *lockerusecases.GetLockerCase
 	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
-	registerPackageCase    *lockerusecases.RegisterPackageCase
-	openLockerCase         *lockerusecases.OpenLockerCase
 	listLockersCase        *lockerusecases.ListLockersCase
+}
+
+// OpenLocker implements iservices.LockerService.
+func (s *LockerService) OpenLocker(lockerID int, password string) error {
+	panic("unimplemented")
 }
 
 // GetAvailableLockers implements iservices.LockerService.
@@ -23,14 +25,12 @@ func (s *LockerService) GetAvailableLockers() ([]int, error) {
 	panic("unimplemented")
 }
 
-func NewLockerService(lockerRepo irepositories.LockerRepository, packageRepo irepositories.PackageRepository) iservices.LockerService {
+func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.LockerService {
 	return &LockerService{
 		registerLockerCase:     lockerusecases.NewRegisterLockerCase(lockerRepo),
 		getAvailableLockerCase: lockerusecases.NewGetAvailableLockerCase(lockerRepo),
 		getLockerCase:          lockerusecases.NewGetLockerCase(lockerRepo),
 		updateLockerStatusCase: lockerusecases.NewUpdateLockerStatusCase(lockerRepo),
-		registerPackageCase:    lockerusecases.NewRegisterPackageCase(lockerRepo, packageRepo),
-		openLockerCase:         lockerusecases.NewOpenLockerCase(lockerRepo, packageRepo),
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),
 	}
 }
@@ -45,14 +45,6 @@ func (s *LockerService) GetLocker(id int) (*entities.Locker, error) {
 
 func (s *LockerService) UpdateLockerStatus(id int, status entities.LockerStatus) error {
 	return s.updateLockerStatusCase.Execute(id, status)
-}
-
-func (s *LockerService) RegisterPackage(userID uuid.UUID, lockerID, expirationTime int) (*entities.Package, error) {
-	return s.registerPackageCase.Execute(userID, lockerID, expirationTime)
-}
-
-func (s *LockerService) OpenLocker(lockerID int, password string) error {
-	return s.openLockerCase.Execute(lockerID, password)
 }
 
 func (s *LockerService) ListLockers() ([]*entities.Locker, error) {
