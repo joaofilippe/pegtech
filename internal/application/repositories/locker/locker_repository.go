@@ -168,7 +168,7 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return []int{}, err
 	}
 
 	return lockers, nil
