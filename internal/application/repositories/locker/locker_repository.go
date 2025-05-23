@@ -175,12 +175,14 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 }
 
 // RegisterPackage registers a package in a locker
-func (r *LockerRepository) RegisterPackage(lockerID int, packageCode string, packagePickupPassword string, userID uuid.UUID, expiresAt *time.Time) error {
+func (r *LockerRepository) RegisterPackage(lockerID int, registration entities.PackageRegistration) error {
 	_, err := r.db.DB().Exec(RegisterPackageQuery,
-		lockerID,
-		userID,
-		expiresAt,
+		registration.PackageCode,
+		registration.PackagePickupPassword,
+		registration.UserID,
+		registration.ExpiresAt,
 		time.Now(),
+		lockerID,
 	)
 	return err
 }
