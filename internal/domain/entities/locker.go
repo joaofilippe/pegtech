@@ -3,6 +3,8 @@ package entities
 import (
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -13,10 +15,9 @@ var (
 type LockerStatus string
 
 const (
-	LockerStatusAvailable   LockerStatus = "AVAILABLE"
-	LockerStatusOccupied    LockerStatus = "OCCUPIED"
-	LockerStatusReserved    LockerStatus = "RESERVED"
-	LockerStatusMaintenance LockerStatus = "MAINTENANCE"
+	LockerStatusAvailable LockerStatus = "AVAILABLE"
+	LockerStatusOccupied  LockerStatus = "OCCUPIED"
+	LockerStatusReserved  LockerStatus = "RESERVED"
 )
 
 type Locker struct {
@@ -26,10 +27,10 @@ type Locker struct {
 	PackageCode            string
 	PackagePickupPassword  string
 	PackagePickupExpiresAt time.Time
-	PackageUserID          string
+	PackageUserID          uuid.UUID
 	Status                 LockerStatus
 	Client                 *User
-	ReservedAt             *time.Time
+	ReservedExpiration     *time.Time
 	OccupiedAt             *time.Time
 	OccupiedUntil          *time.Time
 	CreatedAt              time.Time
@@ -37,17 +38,25 @@ type Locker struct {
 }
 
 func NewLocker(id int, number, size, location string) *Locker {
+	now := time.Now()
 	return &Locker{
-		ID:        id,
-		Number:    number,
-		Location:  location,
-		Status:    LockerStatusAvailable,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:                    id,
+		Number:                number,
+		Location:              location,
+		Status:                LockerStatusAvailable,
+		CreatedAt:             now,
+		UpdatedAt:             now,
+		ReservedExpiration:    nil,
+		OccupiedAt:            nil,
+		OccupiedUntil:         nil,
+		PackageCode:           "",
+		PackagePickupPassword: "",
+		PackageUserID:         uuid.Nil,
+		Client:                nil,
 	}
 }
 
-func (l *Locker) Reserve(client *User) error {
+func (l *Locker) Reserve(client *User, expiration *time.Duration) error {
 	if l.Status != LockerStatusAvailable {
 		return ErrLockerNotAvailable
 	}
@@ -55,12 +64,15 @@ func (l *Locker) Reserve(client *User) error {
 	now := time.Now()
 	l.Status = LockerStatusReserved
 	l.Client = client
-	l.ReservedAt = &now
+	l.ReservedExpiration = &now
+	if expiration != nil {
+		exp := now.Add(*expiration)
+		l.ReservedExpiration = &exp
+	}
 	l.UpdatedAt = now
 
 	return nil
 }
-
 
 func (l *Locker) SetAvailable() {
 	l.Status = LockerStatusAvailable

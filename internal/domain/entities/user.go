@@ -13,7 +13,6 @@ const (
 	UserTypeClient   UserType = "CLIENT"
 )
 
-
 type User struct {
 	ID        uuid.UUID
 	Username  string
@@ -27,16 +26,19 @@ type User struct {
 	UpdatedAt time.Time
 }
 
-func NewUser(name, username, email, password string, userType UserType) *User {
+func NewUser(name, username, email, phone, password string, userType UserType) *User {
+	now := time.Now()
 	return &User{
 		ID:        uuid.New(),
+		Username:  username,
 		Name:      name,
 		Email:     email,
+		Phone:     phone,
 		Password:  password,
 		Type:      userType,
 		Active:    true,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 }
 

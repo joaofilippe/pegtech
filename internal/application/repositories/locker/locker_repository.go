@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joaofilippe/pegtech/internal/domain/entities"
 	"github.com/joaofilippe/pegtech/internal/domain/irepositories"
 	"github.com/joaofilippe/pegtech/internal/infra/repositories/database"
@@ -17,14 +18,14 @@ var (
 
 // LockerRepository implements the LockerRepository interface
 type LockerRepository struct {
-	db *database.PostgresDB
+	db   *database.PostgresDB
 	mqtt *mqtt.MqttClient
 }
 
 // NewLockerRepository creates a new instance of LockerRepository
 func NewLockerRepository(db *database.PostgresDB, mqtt *mqtt.MqttClient) irepositories.LockerRepository {
 	return &LockerRepository{
-		db: db,
+		db:   db,
 		mqtt: mqtt,
 	}
 }
@@ -148,7 +149,7 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 	}
 	defer rows.Close()
 
-	var lockers []*entities.Locker
+	var lockers []int
 	for rows.Next() {
 		locker := &entities.Locker{}
 		err := rows.Scan(
@@ -162,12 +163,35 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 		if err != nil {
 			return nil, err
 		}
-		lockers = append(lockers, locker)
+
+		lockers = append(lockers, locker.ID)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	return lockers, nil
+}
+
+// RegisterPackage registers a package in a locker
+func (r *LockerRepository) RegisterPackage(lockerID int, userID uuid.UUID, expiresAt *time.Time) error {
+	_, err := r.db.DB().Exec(RegisterPackageQuery,
+		lockerID,
+		userID,
+		expiresAt,
+		time.Now(),
+	)
+	return err
+}
+
+// ReserveLocker reserves a locker for a user
+func (r *LockerRepository) ReserveLocker(lockerID int, userID uuid.UUID, expiration *time.Time) error {
+	_, err := r.db.DB().Exec(ReserveLockerQuery,
+		userID,
+		expiration,
+		time.Now(),
+		lockerID,
+	)
+	return err
 }

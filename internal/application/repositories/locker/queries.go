@@ -45,4 +45,20 @@ const (
 		WHERE status = $1 AND size = $2
 		ORDER BY number ASC
 	`
+
+	RegisterPackageQuery = `
+		UPDATE lockers 
+		SET package_code = $1, 
+			package_pickup_password = $2, 
+			package_user_id = $3, 
+			package_pickup_expires_at = $4, 
+			updated_at = $5 
+		WHERE id = $6`
+
+	ReserveLockerQuery = `
+		UPDATE lockers 
+		SET client_id = $1, 
+			reserved_expiration = $2, 
+			updated_at = $3 
+		WHERE id = $4`
 )
