@@ -15,5 +15,5 @@ type LockerRepository interface {
 	ListLockers() ([]*entities.Locker, error)
 	UpdateLockerStatus(id int, status entities.LockerStatus) error
 	ReserveLocker(lockerID int, userID uuid.UUID, expiresAt *time.Time) error
-	RegisterPackage(lockerID int, userID uuid.UUID, expiresAt *time.Time) error
+	RegisterPackage(lockerID int, packageCode string, packagePickupPassword string, userID uuid.UUID, expiresAt *time.Time) error
 }
