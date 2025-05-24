@@ -54,26 +54,16 @@ func (s *Subscriber) SubscribeToPackageRegistration() error {
 	return s.Subscribe("locker/package/register", func(topic string, payload []byte) {
 		// O payload já é uma string, não precisa decodificar JSON
 		packageCode := string(payload)
-		log.Printf("Pacote registrado: %s", packageCode)
+		log.Printf("%s", packageCode)
 	})
 }
 
 // SubscribeToPackagePickup subscreve ao tópico de retirada de pacotes
-func (s *Subscriber) SubscribeToPackagePickup() (chan int, error) {
-	lockerChan := make(chan int, 100) // Buffer de 100 mensagens
+func (s *Subscriber) SubscribeToPackagePickup() (chan []byte, error) {
+	lockerChan := make(chan []byte, 100) // Buffer de 100 mensagens
 
 	err := s.Subscribe("locker/package/pickup", func(topic string, payload []byte) {
-		var pickupData struct {
-			LockerID int `json:"locker_id"`
-		}
-
-		if err := json.Unmarshal(payload, &pickupData); err != nil {
-			log.Printf("Erro ao decodificar mensagem MQTT: %v", err)
-			return
-		}
-
-		// Envia o ID do locker para o canal
-		lockerChan <- pickupData.LockerID
+		lockerChan <-payload
 	})
 
 	if err != nil {
@@ -82,6 +72,38 @@ func (s *Subscriber) SubscribeToPackagePickup() (chan int, error) {
 	}
 
 	return lockerChan, nil
+}
+
+// SubscribeToLockerAvailable subscreve ao tópico de disponibilidade dos lockers
+func (s *Subscriber) SubscribeToLockerAvailable() error {
+	type Locker struct {
+		LockerID int `json:"locker_id"`
+		Ports []int `json:"ports"`
+	}
+
+	availableChan := make(chan []Locker, 100) // Buffer de 100 mensagens
+
+	err := s.Subscribe("locker/available", func(topic string, payload []byte) {
+		var availableData struct {
+			Lockers []Locker `json:"lockers"`
+		}
+
+		if err := json.Unmarshal(payload, &availableData); err != nil {
+			log.Printf("Erro ao decodificar mensagem MQTT: %v", err)
+			return
+		}
+
+		// Envia o ID do locker para o canal
+		availableChan <- availableData.Lockers
+		log.Printf("%v", availableData.Lockers)
+	})
+
+	if err != nil {
+		close(availableChan)
+		return err
+	}
+
+	return nil
 }
 
 // Start inicia todas as subscrições

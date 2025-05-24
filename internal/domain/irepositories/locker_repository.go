@@ -24,6 +24,6 @@ type LockerRepository interface {
 	UpdateLocker(locker *entities.Locker) error
 	RegisterPackage(lockerID int, registration PackageRegistration) error
 	UpdateLockerStatus(id int, status entities.LockerStatus) error
-	ReleaseLocker(id int) error
+	ReleaseLocker(lockerID int, packageCode string) error
 	GetMQTTClient() *mqtt.MqttClient
 }

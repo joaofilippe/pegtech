@@ -1,6 +1,8 @@
 package application
 
 import (
+	"log"
+
 	"github.com/joaofilippe/pegtech/internal/domain/iservices"
 )
 
@@ -18,17 +20,36 @@ func NewApplication(
 		UserService:   userService,
 	}
 
-	app.init()
+	err := app.startSubscriptions()
+	if err != nil {
+		log.Fatalf("Error starting subscriptions: %v", err)
+	}
+
+	err = app.init()
+	if err != nil {
+		log.Fatalf("Error initializing application: %v", err)
+	}
+
 	return app
 }
 
-func (a *Application) init() {
-		// Register 10 initial lockers
-		for i := 1; i <= 10; i++ {
-			err := a.LockerService.RegisterLocker(i)
-			if err != nil {
-				// Log error but continue
-				continue
-			}
+func (a *Application) init() error {
+	// Register 10 initial lockers
+	for i := 1; i <= 10; i++ {
+		err := a.LockerService.RegisterLocker(i)
+		if err != nil {
+			return err
 		}
+	}
+
+	return nil
+}
+
+func (a *Application) startSubscriptions() error {
+	_, err := a.LockerService.StartPackagePickupSubscription()
+	if err != nil {
+		return err
+	}
+
+	return a.LockerService.StartRegisterPackageSubscription()
 }

@@ -3,6 +3,7 @@ package mqtt
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -40,8 +41,13 @@ func NewClient(broker, port, protocol, username, password, clientID, caCertPath 
 }
 
 // Publish publica uma mensagem em um tópico
-func (c *MqttClient) Publish(topic string, payload []byte) error {
-	token := c.client.Publish(topic, 0, false, payload)
+func (c *MqttClient) Publish(topic string, payload any) error {
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	token := c.client.Publish(topic, 0, false, jsonPayload)
 	token.Wait()
 	return token.Error()
 }

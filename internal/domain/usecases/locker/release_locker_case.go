@@ -17,6 +17,6 @@ func NewReleaseLockerCase(lockerRepo irepositories.LockerRepository) *ReleaseLoc
 }
 
 // Execute performs the locker release operation
-func (uc *ReleaseLockerCase) Execute(id int) error {
-	return uc.lockerRepo.ReleaseLocker(id)
+func (uc *ReleaseLockerCase) Execute(lockerID int, packageCode string) error {
+	return uc.lockerRepo.ReleaseLocker(lockerID, packageCode)
 }

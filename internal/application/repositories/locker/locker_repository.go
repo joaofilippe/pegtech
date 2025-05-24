@@ -209,20 +209,33 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 func (r *LockerRepository) RegisterPackage(lockerID int, registration irepositories.PackageRegistration) error {
 	var packageMap = make(map[string]interface{})
 	var packageMapInfo = make(map[string]interface{})
+	packageMapInfo["locker_id"] = lockerID
 	packageMapInfo["package_code"] = registration.PackageCode
 	packageMapInfo["package_pickup_password"] = registration.PackagePickupPassword
-	packageMapInfo["user_id"] = registration.UserID
 	packageMapInfo["expires_at"] = registration.ExpiresAt
-	packageMapInfo["locker_id"] = lockerID
+
+	packageMQTT := struct {
+		LockerID int `json:"locker_id"`
+		Port int `json:"port"`
+		PackageCode string `json:"package_code"`
+		PackagePickupPassword string `json:"package_pickup_password"`
+		ExpiresAt *time.Time `json:"expires_at"`
+	}{
+		LockerID: 354645,
+		Port: lockerID,
+		PackageCode: registration.PackageCode,
+		PackagePickupPassword: registration.PackagePickupPassword,
+		ExpiresAt: registration.ExpiresAt,
+	}
 
 	packageMap["package"] = packageMapInfo
 
-	jsonData, err := json.Marshal(packageMap)
+	_, err := json.Marshal(packageMap)
 	if err != nil {
 		return err
 	}
 
-	err = r.mqtt.Publish("locker/package/register", jsonData)
+	err = r.mqtt.Publish("locker/package/register", packageMQTT)
 	if err != nil {
 		return err
 	}
@@ -268,7 +281,7 @@ func (r *LockerRepository) UpdateLocker(locker *entities.Locker) error {
 }
 
 // ReleaseLocker releases a locker by clearing its package information and setting it to available
-func (r *LockerRepository) ReleaseLocker(id int) error {
+func (r *LockerRepository) ReleaseLocker(lockerID int, packageCode string) error {
 	_, err := r.db.DB().Exec(ReleaseLockerQuery,
 		"",                             // package_code
 		"",                             // package_pickup_password
@@ -279,7 +292,7 @@ func (r *LockerRepository) ReleaseLocker(id int) error {
 		nil,                            // occupied_at
 		nil,                            // occupied_until
 		time.Now(),                     // updated_at
-		id,
+		lockerID,
 	)
 	return err
 }

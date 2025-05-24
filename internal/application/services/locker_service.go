@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/google/uuid"
@@ -70,12 +71,12 @@ func (s *LockerService) RegisterPackage(userID uuid.UUID, expirationTime int) (s
 }
 
 // ReleaseLocker implements iservices.LockerService
-func (s *LockerService) ReleaseLocker(id int) error {
-	return s.releaseLockerCase.Execute(id)
+func (s *LockerService) ReleaseLocker(lockerID int, packageCode string) error {
+	return s.releaseLockerCase.Execute(lockerID, packageCode)
 }
 
 // StartPackagePickupSubscription starts listening to package pickup events
-func (s *LockerService) StartPackagePickupSubscription() (chan int, error) {
+func (s *LockerService) StartPackagePickupSubscription() (chan []byte, error) {
 	subscriber := mqtt.NewSubscriber(s.mqttClient)
 
 	lockerChan, err := subscriber.SubscribeToPackagePickup()
@@ -85,15 +86,43 @@ func (s *LockerService) StartPackagePickupSubscription() (chan int, error) {
 
 	// Inicia uma goroutine para processar os IDs dos lockers
 	go func() {
-		for lockerID := range lockerChan {
-			// Libera o locker
-			if err := s.ReleaseLocker(lockerID); err != nil {
-				log.Printf("Erro ao liberar locker %d: %v", lockerID, err)
+		for locker := range lockerChan {
+			var lockerInput struct {
+				ID int `json:"locker_id"`
+				PackageCode string `json:"package_code"`
+			}
+
+			if err := json.Unmarshal(locker, &lockerInput); err != nil {
+				log.Printf("Erro ao decodificar mensagem MQTT: %v", err)
 				continue
 			}
-			log.Printf("Locker %d liberado após retirada do pacote", lockerID)
+
+			// Libera o locker
+			if err := s.ReleaseLocker(lockerInput.ID, lockerInput.PackageCode); err != nil {
+				log.Printf("Erro ao liberar locker %d: %v", lockerInput.ID, err)
+				continue
+			}
+			log.Printf("Locker %d liberado após retirada do pacote", lockerInput.ID)
 		}
 	}()
 
 	return lockerChan, nil
+}
+
+// StartRegisterPackageSubscription implements iservices.LockerService.
+func (s *LockerService) StartRegisterPackageSubscription() error {
+	subscriber := mqtt.NewSubscriber(s.mqttClient)
+
+	err := subscriber.SubscribeToPackageRegistration()
+	if err != nil {
+		return err
+	}
+
+	err = subscriber.SubscribeToLockerAvailable()
+	if err != nil {
+		return err
+	}
+	
+
+	return nil
 }
