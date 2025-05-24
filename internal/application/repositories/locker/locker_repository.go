@@ -52,34 +52,6 @@ func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
 	return err
 }
 
-// GetAvailableLocker retrieves an available locker by size
-func (r *LockerRepository) GetAvailableLocker(size string) (*entities.Locker, error) {
-	locker := &entities.Locker{}
-	err := r.db.DB().QueryRow(GetAvailableLockerQuery, entities.LockerStatusAvailable, size).Scan(
-		&locker.ID,
-		&locker.Number,
-		&locker.PackageCode,
-		&locker.PackagePickupPassword,
-		&locker.PackagePickupExpiresAt,
-		&locker.PackageUserID,
-		&locker.Status,
-		&locker.ReservedExpiration,
-		&locker.OccupiedAt,
-		&locker.OccupiedUntil,
-		&locker.CreatedAt,
-		&locker.UpdatedAt,
-	)
-
-	if err == sql.ErrNoRows {
-		return nil, ErrLockerNotFound
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return locker, nil
-}
 
 // GetLocker retrieves a locker by ID
 func (r *LockerRepository) GetLocker(id int) (*entities.Locker, error) {
