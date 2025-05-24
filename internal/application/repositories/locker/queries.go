@@ -20,25 +20,13 @@ const (
 	// SaveLockerQuery inserts or updates a locker
 	SaveLockerQuery = `
 		INSERT INTO lockers (
-			id, number, package_code, package_pickup_password,
+			id, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		)
 		VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
 		)
-		ON CONFLICT (id) DO UPDATE
-		SET 
-			number = $2,
-			package_code = $3,
-			package_pickup_password = $4,
-			package_pickup_expires_at = $5,
-			package_user_id = $6,
-			status = $7,
-			reserved_expiration = $8,
-			occupied_at = $9,
-			occupied_until = $10,
-			updated_at = $12
 	`
 
 	// GetAvailableLockerQuery retrieves an available locker by size

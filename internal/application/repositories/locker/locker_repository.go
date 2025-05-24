@@ -35,6 +35,7 @@ func NewLockerRepository(db *database.PostgresDB, mqtt *mqtt.MqttClient) ireposi
 func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
 	_, err := r.db.DB().Exec(SaveLockerQuery,
 		locker.ID,
+		locker.Port,
 		locker.Number,
 		locker.PackageCode,
 		locker.PackagePickupPassword,
