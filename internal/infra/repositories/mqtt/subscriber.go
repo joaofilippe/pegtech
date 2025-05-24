@@ -1,7 +1,6 @@
 package mqtt
 
 import (
-	"encoding/json"
 	"log"
 )
 
@@ -75,35 +74,20 @@ func (s *Subscriber) SubscribeToPackagePickup() (chan []byte, error) {
 }
 
 // SubscribeToLockerAvailable subscreve ao tópico de disponibilidade dos lockers
-func (s *Subscriber) SubscribeToLockerAvailable() error {
-	type Locker struct {
-		LockerID int `json:"locker_id"`
-		Ports []int `json:"ports"`
-	}
-
-	availableChan := make(chan []Locker, 100) // Buffer de 100 mensagens
+func (s *Subscriber) SubscribeToLockerAvailable() (chan []byte, error) {
+	availableChan := make(chan []byte, 100) // Buffer de 100 mensagens
 
 	err := s.Subscribe("locker/available", func(topic string, payload []byte) {
-		var availableData struct {
-			Lockers []Locker `json:"lockers"`
-		}
-
-		if err := json.Unmarshal(payload, &availableData); err != nil {
-			log.Printf("Erro ao decodificar mensagem MQTT: %v", err)
-			return
-		}
-
 		// Envia o ID do locker para o canal
-		availableChan <- availableData.Lockers
-		log.Printf("%v", availableData.Lockers)
+		availableChan <- payload
 	})
 
 	if err != nil {
 		close(availableChan)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return availableChan, nil
 }
 
 // Start inicia todas as subscrições

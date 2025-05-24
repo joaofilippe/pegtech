@@ -22,6 +22,7 @@ const (
 
 type Locker struct {
 	ID                     int
+	Port                   int
 	Number                 string
 	PackageCode            string
 	PackagePickupPassword  string

@@ -118,11 +118,33 @@ func (s *LockerService) StartRegisterPackageSubscription() error {
 		return err
 	}
 
-	err = subscriber.SubscribeToLockerAvailable()
+	_, err = subscriber.SubscribeToLockerAvailable()
 	if err != nil {
 		return err
 	}
 	
 
 	return nil
+}
+
+func (s *LockerService) StartLockerAvailableSubscription() (chan []byte, error) {
+	subscriber := mqtt.NewSubscriber(s.mqttClient)
+
+	availableChan, err := subscriber.SubscribeToLockerAvailable()
+	if err != nil {
+		return nil, err
+	}
+
+	for available := range availableChan {
+		var availableData struct {
+			Lockers []entities.Locker `json:"lockers"`
+		}
+
+		if err := json.Unmarshal(available, &availableData); err != nil {
+			log.Printf("Erro ao decodificar mensagem MQTT: %v", err)
+			continue
+		}
+	}
+
+	return availableChan, nil
 }
