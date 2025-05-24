@@ -43,8 +43,8 @@ func (s *LockerService) GetAvailableLockers() ([]int, error) {
 	return s.getAvailableLockerCase.Execute()
 }
 
-func (s *LockerService) RegisterLocker(id int) error {
-	return s.registerLockerCase.Execute(id)
+func (s *LockerService) RegisterLocker(lockerID int, ports []int) error{
+	return s.registerLockerCase.Execute(lockerID, ports)
 }
 
 func (s *LockerService) GetLocker(id int) (*entities.Locker, error) {

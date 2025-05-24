@@ -36,13 +36,14 @@ func (r *LockerRoutes) Register(e *echo.Echo) {
 func (r *LockerRoutes) registerLocker(c echo.Context) error {
 	var input struct {
 		ID int `json:"id"`
+		Ports []int `json:"ports"`
 	}
 
 	if err := c.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := r.lockerService.RegisterLocker(input.ID); err != nil {
+	if err := r.lockerService.RegisterLocker(input.ID, input.Ports); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

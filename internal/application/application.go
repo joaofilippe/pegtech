@@ -35,8 +35,8 @@ func NewApplication(
 
 func (a *Application) init() error {
 	// Register 10 initial lockers
-	for i := 1; i <= 10; i++ {
-		err := a.LockerService.RegisterLocker(i)
+	for i := 1; i <= 4; i++ {
+		err := a.LockerService.RegisterLocker(i, []int{1, 2, 3, 4})
 		if err != nil {
 			return err
 		}

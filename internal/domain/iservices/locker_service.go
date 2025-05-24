@@ -7,7 +7,7 @@ import (
 
 // LockerService defines the interface for locker operations
 type LockerService interface {
-	RegisterLocker(id int) error
+	RegisterLocker(lockerID int, ports []int) error
 	RegisterPackage(userID uuid.UUID, expirationTime int) (string, error)
 	ReserveLocker(userID uuid.UUID, expirationTime int) (string, error)
 	GetAvailableLockers() ([]int, error)
