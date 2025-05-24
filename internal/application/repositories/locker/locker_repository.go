@@ -52,12 +52,12 @@ func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
 	return err
 }
 
-
 // GetLocker retrieves a locker by ID
 func (r *LockerRepository) GetLocker(id int) (*entities.Locker, error) {
 	locker := &entities.Locker{}
 	err := r.db.DB().QueryRow(GetLockerQuery, id).Scan(
 		&locker.ID,
+		&locker.Port,
 		&locker.Number,
 		&locker.PackageCode,
 		&locker.PackagePickupPassword,
@@ -114,6 +114,7 @@ func (r *LockerRepository) ListLockers() ([]*entities.Locker, error) {
 		locker := &entities.Locker{}
 		err := rows.Scan(
 			&locker.ID,
+			&locker.Port,
 			&locker.Number,
 			&locker.PackageCode,
 			&locker.PackagePickupPassword,
@@ -152,6 +153,7 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 		locker := &entities.Locker{}
 		err := rows.Scan(
 			&locker.ID,
+			&locker.Port,
 			&locker.Number,
 			&locker.PackageCode,
 			&locker.PackagePickupPassword,
@@ -188,17 +190,17 @@ func (r *LockerRepository) RegisterPackage(lockerID int, registration irepositor
 	packageMapInfo["expires_at"] = registration.ExpiresAt
 
 	packageMQTT := struct {
-		LockerID int `json:"locker_id"`
-		Port int `json:"port"`
-		PackageCode string `json:"package_code"`
-		PackagePickupPassword string `json:"package_pickup_password"`
-		ExpiresAt *time.Time `json:"expires_at"`
+		LockerID              int        `json:"locker_id"`
+		Port                  int        `json:"port"`
+		PackageCode           string     `json:"package_code"`
+		PackagePickupPassword string     `json:"package_pickup_password"`
+		ExpiresAt             *time.Time `json:"expires_at"`
 	}{
-		LockerID: 354645,
-		Port: lockerID,
-		PackageCode: registration.PackageCode,
+		LockerID:              354645,
+		Port:                  lockerID,
+		PackageCode:           registration.PackageCode,
 		PackagePickupPassword: registration.PackagePickupPassword,
-		ExpiresAt: registration.ExpiresAt,
+		ExpiresAt:             registration.ExpiresAt,
 	}
 
 	packageMap["package"] = packageMapInfo
@@ -238,6 +240,7 @@ func (r *LockerRepository) ReserveLocker(lockerID int, userID uuid.UUID, expirat
 // UpdateLocker updates a locker in the storage
 func (r *LockerRepository) UpdateLocker(locker *entities.Locker) error {
 	_, err := r.db.DB().Exec(UpdateLockerQuery,
+		locker.Port,
 		locker.Number,
 		locker.PackageCode,
 		locker.PackagePickupPassword,

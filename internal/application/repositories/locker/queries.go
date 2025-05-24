@@ -4,17 +4,18 @@ const (
 	// UpdateLockerQuery updates a locker
 	UpdateLockerQuery = `
 		UPDATE lockers 
-		SET number = $1,
-			package_code = $2,
-			package_pickup_password = $3,
-			package_pickup_expires_at = $4,
-			package_user_id = $5,
-			status = $6,
-			reserved_expiration = $7,
-			occupied_at = $8,
-			occupied_until = $9,
-			updated_at = $10
-		WHERE id = $11
+		SET port = $1,
+			number = $2,
+			package_code = $3,
+			package_pickup_password = $4,
+			package_pickup_expires_at = $5,
+			package_user_id = $6,
+			status = $7,
+			reserved_expiration = $8,
+			occupied_at = $9,
+			occupied_until = $10,
+			updated_at = $11
+		WHERE id = $12
 	`
 
 	// SaveLockerQuery inserts or updates a locker
@@ -31,17 +32,17 @@ const (
 
 	// GetAvailableLockerQuery retrieves an available locker by size
 	GetAvailableLockerQuery = `
-		SELECT id, number, package_code, package_pickup_password,
+		SELECT id, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		FROM lockers
-		WHERE status = $1 AND size = $2
+		WHERE status = $1
 		LIMIT 1
 	`
 
 	// GetLockerQuery retrieves a locker by ID
 	GetLockerQuery = `
-		SELECT id, number, package_code, package_pickup_password,
+		SELECT id, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		FROM lockers
@@ -57,16 +58,16 @@ const (
 
 	// ListLockersQuery retrieves all lockers
 	ListLockersQuery = `
-		SELECT id, number, package_code, package_pickup_password,
+		SELECT id, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		FROM lockers
 		ORDER BY number ASC
 	`
 
-	// GetAvailableLockersQuery retrieves all available lockers by size
+	// GetAvailableLockersQuery retrieves all available lockers
 	GetAvailableLockersQuery = `
-		SELECT id, number, package_code, package_pickup_password,
+		SELECT id, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		FROM lockers
