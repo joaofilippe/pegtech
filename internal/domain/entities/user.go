@@ -9,8 +9,8 @@ import (
 type UserType string
 
 const (
-	UserTypeEmployee UserType = "EMPLOYEE"
-	UserTypeClient   UserType = "CLIENT"
+	UserTypeEmployee UserType = "E"
+	UserTypeClient   UserType = "C"
 )
 
 type User struct {
