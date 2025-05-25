@@ -1,98 +1,101 @@
 package repositories
 
 const (
-	// UpdateLockerQuery updates a locker
-	UpdateLockerQuery = `
-		UPDATE lockers 
-		SET port = $1,
-			number = $2,
-			package_code = $3,
-			package_pickup_password = $4,
-			package_pickup_expires_at = $5,
-			package_user_id = $6,
-			status = $7,
-			reserved_expiration = $8,
-			occupied_at = $9,
-			occupied_until = $10,
-			updated_at = $11
-		WHERE id = $12
+	// UpdatePortQuery updates a port
+	UpdatePortQuery = `
+		UPDATE ports 
+		SET number = $1,
+			package_code = $2,
+			package_pickup_password = $3,
+			package_pickup_expires_at = $4,
+			package_user_id = $5,
+			status = $6,
+			reserved_expiration = $7,
+			occupied_at = $8,
+			occupied_until = $9,
+			updated_at = $10
+		WHERE id = $11 AND locker = $12
 	`
 
-	// SaveLockerQuery inserts or updates a locker
-	SaveLockerQuery = `
-		INSERT INTO lockers (
-			id, port, number, package_code, package_pickup_password,
+	// SavePortQuery inserts or updates a port
+	SavePortQuery = `
+		INSERT INTO ports (
+			id, locker, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		)
 		VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 		)
 	`
 
-	// GetAvailableLockerQuery retrieves an available locker by size
-	GetAvailableLockerQuery = `
-		SELECT id, port, number, package_code, package_pickup_password,
+	// GetAvailablePortQuery retrieves an available port
+	GetAvailablePortQuery = `
+		SELECT id, locker, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
-		FROM lockers
-		WHERE status = $1
+		FROM ports
+		WHERE status = $1 AND locker = $2
 		LIMIT 1
 	`
 
-	// GetLockerQuery retrieves a locker by ID
-	GetLockerQuery = `
-		SELECT id, port, number, package_code, package_pickup_password,
+	// GetPortQuery retrieves a port by ID
+	GetPortQuery = `
+		SELECT id, locker, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
-		FROM lockers
-		WHERE id = $1
+		FROM ports
+		WHERE id = $1 AND locker = $2
 	`
 
-	// UpdateLockerStatusQuery updates the status of a locker
-	UpdateLockerStatusQuery = `
-		UPDATE lockers
+	// UpdatePortStatusQuery updates the status of a port
+	UpdatePortStatusQuery = `
+		UPDATE ports
 		SET status = $1, updated_at = $2
-		WHERE id = $3
+		WHERE id = $3 AND locker = $4
 	`
 
-	// ListLockersQuery retrieves all lockers
-	ListLockersQuery = `
-		SELECT id, port, number, package_code, package_pickup_password,
+	// ListPortsQuery retrieves all ports for a locker
+	ListPortsQuery = `
+		SELECT id, locker, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
-		FROM lockers
-		ORDER BY number ASC
+		FROM ports
+		WHERE locker = $1
+		ORDER BY port ASC
 	`
 
-	// GetAvailableLockersQuery retrieves all available lockers
-	GetAvailableLockersQuery = `
-		SELECT id, port, number, package_code, package_pickup_password,
+	// GetAvailablePortsQuery retrieves all available ports for a locker
+	GetAvailablePortsQuery = `
+		SELECT id, locker, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
-		FROM lockers
-		WHERE status = $1
-		ORDER BY number ASC
+		FROM ports
+		WHERE status = $1 AND locker = $2
+		ORDER BY port ASC
 	`
 
+	// RegisterPackageQuery registers a package in a port
 	RegisterPackageQuery = `
-		UPDATE lockers 
+		UPDATE ports 
 		SET package_code = $1, 
 			package_pickup_password = $2, 
 			package_user_id = $3, 
 			package_pickup_expires_at = $4, 
 			updated_at = $5 
-		WHERE id = $6`
+		WHERE id = $6 AND locker = $7`
 
-	ReserveLockerQuery = `
-		UPDATE lockers 
-		SET client_id = $1, 
+	// ReservePortQuery reserves a port
+	ReservePortQuery = `
+		UPDATE ports 
+		SET package_user_id = $1, 
 			reserved_expiration = $2, 
 			updated_at = $3 
-		WHERE id = $4`
+		WHERE id = $4 AND locker = $5`
 
-	ReleaseLockerQuery = `
-		UPDATE lockers 
+	// ReleasePortQuery releases a port
+	ReleasePortQuery = `
+		UPDATE ports 
 		SET package_code = $1,
 			package_pickup_password = $2,
 			package_pickup_expires_at = $3,
@@ -102,5 +105,5 @@ const (
 			occupied_at = $7,
 			occupied_until = $8,
 			updated_at = $9
-		WHERE id = $10`
+		WHERE id = $10 AND locker = $11`
 )

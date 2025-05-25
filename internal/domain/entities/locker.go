@@ -21,11 +21,12 @@ const (
 )
 
 type Locker struct {
-	ID        int
-	Ports     []*Port
+	ID    int
+	Ports []*Port
 }
 type Port struct {
 	ID                     int
+	Locker                 int
 	Port                   int
 	Number                 string
 	PackageCode            string
