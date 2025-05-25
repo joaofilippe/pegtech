@@ -20,7 +20,7 @@ func generatePassword() (string, error) {
 	return fmt.Sprintf("%06d", num), nil
 }
 
-func getAvailableLocker(lockers []*entities.Port) (*entities.Port, error) {
+func getAvailablePort(lockers []*entities.Port) (*entities.Port, error) {
 	for _, locker := range lockers {
 		if locker.Status == entities.LockerStatusAvailable {
 			return locker, nil

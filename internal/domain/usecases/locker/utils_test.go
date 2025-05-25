@@ -62,7 +62,7 @@ func TestGetAvailableLocker(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			locker, err := getAvailableLocker(tt.lockers)
+			locker, err := getAvailablePort(tt.lockers)
 			if tt.expectedError != nil {
 				assert.ErrorIs(t, err, tt.expectedError)
 				assert.Nil(t, locker)

@@ -31,7 +31,7 @@ func (uc *ReserveLockerCase) Execute(userID uuid.UUID, expirationTime int) (stri
 		return "", ErrFoundNoLockers
 	}
 
-	locker, err := getAvailableLocker(lockers)
+	locker, err := getAvailablePort(lockers)
 	if err != nil {
 		return "", err
 	}

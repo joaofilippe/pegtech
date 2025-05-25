@@ -1,6 +1,7 @@
 package lockerusecases
 
 import (
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,17 +24,17 @@ func NewRegisterPackageCase(lockerRepo irepositories.LockerRepository) *Register
 
 // Execute performs the package registration operation
 func (uc *RegisterPackageCase) Execute(userID uuid.UUID, expirationTime int) (string, error) {
-	lockers, err := uc.lockerRepo.ListLockers()
+	ports, err := uc.lockerRepo.ListLockers()
 	if err != nil {
 		return "", err
 	}
 
-	if len(lockers) == 0 {
+	if len(ports) == 0 {
 		return "", errors.ErrFoundNoLockers
 	}
 
 	// Find an available locker
-	availableLocker, err := getAvailableLocker(lockers)
+	availableLocker, err := uc.getAvailablePort(ports)
 	if err != nil {
 		return "", err
 	}
@@ -76,4 +77,54 @@ func (uc *RegisterPackageCase) Execute(userID uuid.UUID, expirationTime int) (st
 	}
 
 	return packageCode, nil
+}
+
+func (uc *RegisterPackageCase) getAvailablePort(ports []*entities.Port) (*entities.Port, error) {
+	availablePorts := make([]*entities.Port, 0)
+	for _, port := range ports {
+		if port.Status == entities.LockerStatusAvailable {
+			availablePorts = append(availablePorts, port)
+		}
+	}
+
+	if len(availablePorts) == 0 {
+		return nil, ErrNoAvailablePorts
+	}
+
+	// Sort ports first by locker number, then by port number
+	sort.Slice(availablePorts, func(i, j int) bool {
+		// If lockers are different, sort by locker
+		if availablePorts[i].Locker != availablePorts[j].Locker {
+			return availablePorts[i].Locker < availablePorts[j].Locker
+		}
+		// If same locker, sort by port number
+		return availablePorts[i].Port < availablePorts[j].Port
+	})
+
+	availablePort := availablePorts[0]
+	contains := false
+	for _, port := range availablePorts {
+		locker, err := uc.lockerRepo.GetAvailablePorts(availablePort.Locker)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, lockerPort := range locker.Ports {
+			if lockerPort.Port == port.Port {
+				contains = true
+				break
+			}
+		}
+
+		if contains {
+			availablePort = port
+			break
+		}
+	}
+
+	if !contains {
+		return nil, ErrNoAvailablePorts
+	}
+
+	return availablePort, nil
 }
