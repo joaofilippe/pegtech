@@ -16,11 +16,11 @@ func generatePassword() (string, error) {
 
 	num := int(bytes[0])<<16 | int(bytes[1])<<8 | int(bytes[2])
 	num = num % 1000000
-	
+
 	return fmt.Sprintf("%06d", num), nil
 }
 
-func getAvailableLocker(lockers []*entities.Locker) (*entities.Locker, error) {
+func getAvailableLocker(lockers []*entities.Port) (*entities.Port, error) {
 	for _, locker := range lockers {
 		if locker.Status == entities.LockerStatusAvailable {
 			return locker, nil
@@ -29,7 +29,7 @@ func getAvailableLocker(lockers []*entities.Locker) (*entities.Locker, error) {
 	return nil, ErrNoAvailableLockers
 }
 
-func getAvailableLockerIDs(lockers []*entities.Locker) ([]int, error) {
+func getAvailableLockerIDs(lockers []*entities.Port) ([]int, error) {
 	availableLockers := make([]int, 0)
 	for _, locker := range lockers {
 		if locker.Status == entities.LockerStatusAvailable {

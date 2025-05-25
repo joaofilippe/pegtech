@@ -33,7 +33,7 @@ func (uc *RegisterPackageCase) Execute(userID uuid.UUID, expirationTime int) (st
 	}
 
 	// Find an available locker
-	var availableLocker *entities.Locker
+	var availableLocker *entities.Port
 	for _, locker := range lockers {
 		if locker.Status == entities.LockerStatusAvailable {
 			availableLocker = locker

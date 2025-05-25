@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,20 +20,22 @@ var (
 
 // LockerRepository implements the LockerRepository interface
 type LockerRepository struct {
-	db   *database.PostgresDB
-	mqtt *mqtt.MqttClient
+	db         *database.PostgresDB
+	mqttClient *mqtt.MqttClient
+	subscriber *mqtt.Subscriber
 }
 
 // NewLockerRepository creates a new instance of LockerRepository
-func NewLockerRepository(db *database.PostgresDB, mqtt *mqtt.MqttClient) irepositories.LockerRepository {
+func NewLockerRepository(db *database.PostgresDB, mqttClient *mqtt.MqttClient) irepositories.LockerRepository {
 	return &LockerRepository{
-		db:   db,
-		mqtt: mqtt,
+		db:         db,
+		mqttClient: mqttClient,
+		subscriber: mqtt.NewSubscriber(mqttClient),
 	}
 }
 
 // SaveLocker saves a locker to the storage
-func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
+func (r *LockerRepository) SaveLocker(locker *entities.Port) error {
 	_, err := r.db.DB().Exec(SaveLockerQuery,
 		locker.ID,
 		locker.Port,
@@ -53,8 +56,8 @@ func (r *LockerRepository) SaveLocker(locker *entities.Locker) error {
 }
 
 // GetLocker retrieves a locker by ID
-func (r *LockerRepository) GetLocker(id int) (*entities.Locker, error) {
-	locker := &entities.Locker{}
+func (r *LockerRepository) GetLocker(id int) (*entities.Port, error) {
+	locker := &entities.Port{}
 	err := r.db.DB().QueryRow(GetLockerQuery, id).Scan(
 		&locker.ID,
 		&locker.Port,
@@ -102,16 +105,16 @@ func (r *LockerRepository) UpdateLockerStatus(id int, status entities.LockerStat
 }
 
 // ListLockers retrieves all lockers
-func (r *LockerRepository) ListLockers() ([]*entities.Locker, error) {
+func (r *LockerRepository) ListLockers() ([]*entities.Port, error) {
 	rows, err := r.db.DB().Query(ListLockersQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var lockers []*entities.Locker
+	var lockers []*entities.Port
 	for rows.Next() {
-		locker := &entities.Locker{}
+		locker := &entities.Port{}
 		err := rows.Scan(
 			&locker.ID,
 			&locker.Port,
@@ -142,6 +145,28 @@ func (r *LockerRepository) ListLockers() ([]*entities.Locker, error) {
 
 // GetAvailableLockers retrieves all available lockers by size
 func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
+	// Request available lockers from MQTT
+	if err := r.mqttClient.Publish("locker/available", []byte{}); err != nil {
+		log.Printf("Error requesting available lockers from MQTT: %v", err)
+	}
+
+	availableChan, err := r.subscriber.SubscribeToLockerAvailable()
+	if err != nil {
+		return nil, err
+	}
+
+	for available := range availableChan {
+		var availableData struct {
+			LockerID int   `json:"locker_id"`
+			Ports    []int `json:"ports"`
+		}
+
+		if err := json.Unmarshal(available, &availableData); err != nil {
+			log.Printf("Error unmarshalling available lockers: %v", err)
+			continue
+		}
+	}
+
 	rows, err := r.db.DB().Query(GetAvailableLockersQuery, entities.LockerStatusAvailable)
 	if err != nil {
 		return nil, err
@@ -150,7 +175,7 @@ func (r *LockerRepository) GetAvailableLockers() ([]int, error) {
 
 	var lockers []int
 	for rows.Next() {
-		locker := &entities.Locker{}
+		locker := &entities.Port{}
 		err := rows.Scan(
 			&locker.ID,
 			&locker.Port,
@@ -210,7 +235,7 @@ func (r *LockerRepository) RegisterPackage(lockerID int, registration irepositor
 		return err
 	}
 
-	err = r.mqtt.Publish("locker/package/register", packageMQTT)
+	err = r.mqttClient.Publish("locker/package/register", packageMQTT)
 	if err != nil {
 		return err
 	}
@@ -238,7 +263,7 @@ func (r *LockerRepository) ReserveLocker(lockerID int, userID uuid.UUID, expirat
 }
 
 // UpdateLocker updates a locker in the storage
-func (r *LockerRepository) UpdateLocker(locker *entities.Locker) error {
+func (r *LockerRepository) UpdateLocker(locker *entities.Port) error {
 	_, err := r.db.DB().Exec(UpdateLockerQuery,
 		locker.Port,
 		locker.Number,
@@ -274,5 +299,5 @@ func (r *LockerRepository) ReleaseLocker(lockerID int, packageCode string) error
 }
 
 func (r *LockerRepository) GetMQTTClient() *mqtt.MqttClient {
-	return r.mqtt
+	return r.mqttClient
 }

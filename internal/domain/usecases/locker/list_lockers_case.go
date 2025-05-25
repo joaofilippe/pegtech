@@ -18,6 +18,6 @@ func NewListLockersCase(lockerRepo irepositories.LockerRepository) *ListLockersC
 }
 
 // Execute performs the locker listing operation
-func (uc *ListLockersCase) Execute() ([]*entities.Locker, error) {
+func (uc *ListLockersCase) Execute() ([]*entities.Port, error) {
 	return uc.lockerRepo.ListLockers()
 }

@@ -43,11 +43,11 @@ func (s *LockerService) GetAvailableLockers() ([]int, error) {
 	return s.getAvailableLockerCase.Execute()
 }
 
-func (s *LockerService) RegisterLocker(lockerID int, ports []int) error{
+func (s *LockerService) RegisterLocker(lockerID int, ports []int) error {
 	return s.registerLockerCase.Execute(lockerID, ports)
 }
 
-func (s *LockerService) GetLocker(id int) (*entities.Locker, error) {
+func (s *LockerService) GetLocker(id int) (*entities.Port, error) {
 	return s.getLockerCase.Execute(id)
 }
 
@@ -55,7 +55,7 @@ func (s *LockerService) UpdateLockerStatus(id int, status entities.LockerStatus)
 	return s.updateLockerStatusCase.Execute(id, status)
 }
 
-func (s *LockerService) ListLockers() ([]*entities.Locker, error) {
+func (s *LockerService) ListLockers() ([]*entities.Port, error) {
 	lockers, err := s.listLockersCase.Execute()
 	return lockers, err
 }
@@ -88,7 +88,7 @@ func (s *LockerService) StartPackagePickupSubscription() (chan []byte, error) {
 	go func() {
 		for locker := range lockerChan {
 			var lockerInput struct {
-				ID int `json:"locker_id"`
+				ID          int    `json:"locker_id"`
 				PackageCode string `json:"package_code"`
 			}
 
@@ -122,7 +122,6 @@ func (s *LockerService) StartRegisterPackageSubscription() error {
 	if err != nil {
 		return err
 	}
-	
 
 	return nil
 }
@@ -137,7 +136,7 @@ func (s *LockerService) StartLockerAvailableSubscription() (chan []byte, error) 
 
 	for available := range availableChan {
 		var availableData struct {
-			Lockers []entities.Locker `json:"lockers"`
+			Lockers []entities.Port `json:"lockers"`
 		}
 
 		if err := json.Unmarshal(available, &availableData); err != nil {

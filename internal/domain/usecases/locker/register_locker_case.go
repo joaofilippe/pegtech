@@ -18,15 +18,15 @@ func NewRegisterLockerCase(lockerRepo irepositories.LockerRepository) *RegisterL
 }
 
 // Execute performs the locker registration operation
-func (uc *RegisterLockerCase) Execute(lockerID int, ports []int)  error {
+func (uc *RegisterLockerCase) Execute(lockerID int, ports []int) error {
 	for _, port := range ports {
-		locker := &entities.Locker{
+		locker := &entities.Port{
 			ID:     lockerID,
 			Port:   port,
 			Status: entities.LockerStatusAvailable,
 		}
 		return uc.lockerRepo.SaveLocker(locker)
 	}
-	
+
 	return nil
 }

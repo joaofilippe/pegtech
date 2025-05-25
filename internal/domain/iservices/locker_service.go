@@ -11,9 +11,9 @@ type LockerService interface {
 	RegisterPackage(userID uuid.UUID, expirationTime int) (string, error)
 	ReserveLocker(userID uuid.UUID, expirationTime int) (string, error)
 	GetAvailableLockers() ([]int, error)
-	GetLocker(id int) (*entities.Locker, error)
+	GetLocker(id int) (*entities.Port, error)
 	UpdateLockerStatus(id int, status entities.LockerStatus) error
-	ListLockers() ([]*entities.Locker, error)
+	ListLockers() ([]*entities.Port, error)
 	ReleaseLocker(lockerID int, packageCode string) error
 	StartPackagePickupSubscription() (chan []byte, error)
 	StartRegisterPackageSubscription() error

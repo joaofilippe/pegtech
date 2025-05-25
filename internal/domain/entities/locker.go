@@ -21,6 +21,10 @@ const (
 )
 
 type Locker struct {
+	ID        int
+	Ports     []*Port
+}
+type Port struct {
 	ID                     int
 	Port                   int
 	Number                 string
@@ -36,9 +40,9 @@ type Locker struct {
 	UpdatedAt              time.Time
 }
 
-func NewLocker(id int, number, size, location string) *Locker {
+func NewPort(id int, number, size, location string) *Port {
 	now := time.Now()
-	return &Locker{
+	return &Port{
 		ID:                    id,
 		Number:                number,
 		Status:                LockerStatusAvailable,
@@ -53,7 +57,7 @@ func NewLocker(id int, number, size, location string) *Locker {
 	}
 }
 
-func (l *Locker) Reserve(client *User, expiration *time.Duration) error {
+func (l *Port) Reserve(client *User, expiration *time.Duration) error {
 	if l.Status != LockerStatusAvailable {
 		return ErrLockerNotAvailable
 	}
@@ -70,7 +74,7 @@ func (l *Locker) Reserve(client *User, expiration *time.Duration) error {
 	return nil
 }
 
-func (l *Locker) SetAvailable() {
+func (l *Port) SetAvailable() {
 	l.Status = LockerStatusAvailable
 	l.UpdatedAt = time.Now()
 }

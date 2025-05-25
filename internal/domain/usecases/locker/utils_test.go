@@ -29,23 +29,23 @@ func TestGeneratePassword(t *testing.T) {
 func TestGetAvailableLocker(t *testing.T) {
 	tests := []struct {
 		name           string
-		lockers        []*entities.Locker
-		expectedLocker *entities.Locker
+		lockers        []*entities.Port
+		expectedLocker *entities.Port
 		expectedError  error
 	}{
 		{
 			name: "should return first available locker",
-			lockers: []*entities.Locker{
+			lockers: []*entities.Port{
 				{ID: 1, Status: entities.LockerStatusOccupied},
 				{ID: 2, Status: entities.LockerStatusAvailable},
 				{ID: 3, Status: entities.LockerStatusAvailable},
 			},
-			expectedLocker: &entities.Locker{ID: 2, Status: entities.LockerStatusAvailable},
+			expectedLocker: &entities.Port{ID: 2, Status: entities.LockerStatusAvailable},
 			expectedError:  nil,
 		},
 		{
 			name: "should return error when no available lockers",
-			lockers: []*entities.Locker{
+			lockers: []*entities.Port{
 				{ID: 1, Status: entities.LockerStatusOccupied},
 				{ID: 2, Status: entities.LockerStatusOccupied},
 			},
@@ -54,7 +54,7 @@ func TestGetAvailableLocker(t *testing.T) {
 		},
 		{
 			name:           "should return error when empty lockers list",
-			lockers:        []*entities.Locker{},
+			lockers:        []*entities.Port{},
 			expectedLocker: nil,
 			expectedError:  ErrNoAvailableLockers,
 		},
@@ -78,13 +78,13 @@ func TestGetAvailableLocker(t *testing.T) {
 func TestGetAvailableLockerIDs(t *testing.T) {
 	tests := []struct {
 		name          string
-		lockers       []*entities.Locker
+		lockers       []*entities.Port
 		expectedIDs   []int
 		expectedError error
 	}{
 		{
 			name: "should return IDs of all available lockers",
-			lockers: []*entities.Locker{
+			lockers: []*entities.Port{
 				{ID: 1, Status: entities.LockerStatusOccupied},
 				{ID: 2, Status: entities.LockerStatusAvailable},
 				{ID: 3, Status: entities.LockerStatusAvailable},
@@ -94,7 +94,7 @@ func TestGetAvailableLockerIDs(t *testing.T) {
 		},
 		{
 			name: "should return empty list when no available lockers",
-			lockers: []*entities.Locker{
+			lockers: []*entities.Port{
 				{ID: 1, Status: entities.LockerStatusOccupied},
 				{ID: 2, Status: entities.LockerStatusOccupied},
 			},
@@ -103,7 +103,7 @@ func TestGetAvailableLockerIDs(t *testing.T) {
 		},
 		{
 			name:          "should return empty list for empty lockers list",
-			lockers:       []*entities.Locker{},
+			lockers:       []*entities.Port{},
 			expectedIDs:   []int{},
 			expectedError: nil,
 		},
