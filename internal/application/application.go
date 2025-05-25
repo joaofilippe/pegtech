@@ -25,7 +25,7 @@ func NewApplication(
 		log.Fatalf("Error starting subscriptions: %v", err)
 	}
 
-	err = app.init()
+	// err = app.init()
 	if err != nil {
 		log.Fatalf("Error initializing application: %v", err)
 	}
@@ -34,7 +34,6 @@ func NewApplication(
 }
 
 func (a *Application) init() error {
-	// Register 10 initial lockers
 	for i := 1; i <= 4; i++ {
 		err := a.LockerService.RegisterLocker(i, []int{1, 2, 3, 4})
 		if err != nil {

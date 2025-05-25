@@ -21,6 +21,7 @@ type LockerService struct {
 	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
 	listLockersCase        *lockerusecases.ListLockersCase
 	releaseLockerCase      *lockerusecases.ReleaseLockerCase
+	pickupPackageCase      *lockerusecases.PickupPackageCase
 	mqttClient             *mqtt.MqttClient
 }
 
@@ -34,6 +35,7 @@ func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.Locke
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),
 		reserveLockerCase:      lockerusecases.NewReserveLockerCase(lockerRepo),
 		releaseLockerCase:      lockerusecases.NewReleaseLockerCase(lockerRepo),
+		pickupPackageCase:      lockerusecases.NewPickupPackageCase(lockerRepo),
 		mqttClient:             lockerRepo.GetMQTTClient(),
 	}
 }
@@ -73,6 +75,11 @@ func (s *LockerService) RegisterPackage(userID uuid.UUID, expirationTime int) (s
 // ReleaseLocker implements iservices.LockerService
 func (s *LockerService) ReleaseLocker(lockerID int, packageCode string) error {
 	return s.releaseLockerCase.Execute(lockerID, packageCode)
+}
+
+// PickupPackage implements iservices.LockerService
+func (s *LockerService) PickupPackage(packageCode string, password string) error {
+	return s.pickupPackageCase.Execute(packageCode, password)
 }
 
 // StartPackagePickupSubscription starts listening to package pickup events

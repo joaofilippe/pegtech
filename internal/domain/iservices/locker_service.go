@@ -17,4 +17,5 @@ type LockerService interface {
 	ReleaseLocker(lockerID int, packageCode string) error
 	StartPackagePickupSubscription() (chan []byte, error)
 	StartRegisterPackageSubscription() error
+	PickupPackage(packageCode string, password string) error
 }

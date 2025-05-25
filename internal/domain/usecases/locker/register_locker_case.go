@@ -21,11 +21,14 @@ func NewRegisterLockerCase(lockerRepo irepositories.LockerRepository) *RegisterL
 func (uc *RegisterLockerCase) Execute(lockerID int, ports []int) error {
 	for _, port := range ports {
 		locker := &entities.Port{
-			ID:     lockerID,
+			Locker: lockerID,
 			Port:   port,
 			Status: entities.LockerStatusAvailable,
 		}
-		return uc.lockerRepo.SaveLocker(locker)
+		err := uc.lockerRepo.SaveLocker(locker)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -20,12 +20,12 @@ const (
 	// SavePortQuery inserts or updates a port
 	SavePortQuery = `
 		INSERT INTO ports (
-			id, locker, port, number, package_code, package_pickup_password,
+			locker, port, number, package_code, package_pickup_password,
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		)
 		VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
 		)
 	`
 
@@ -106,4 +106,14 @@ const (
 			occupied_until = $8,
 			updated_at = $9
 		WHERE id = $10 AND locker = $11`
+
+	// GetPackagesByUserQuery retrieves all packages for a specific user
+	GetPackagesByUserQuery = `
+		SELECT id, locker, port, number, package_code, package_pickup_password,
+			package_pickup_expires_at, package_user_id, status,
+			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
+		FROM ports
+		WHERE package_user_id = $1
+		ORDER BY created_at DESC
+	`
 )

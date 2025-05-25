@@ -30,12 +30,13 @@ func (r *LockerRoutes) Register(e *echo.Echo) {
 	e.PUT("/lockers/:id/status", r.updateLockerStatus)
 	e.GET("/lockers", r.listLockers)
 	e.POST("/lockers/package", r.registerPackage)
+	e.POST("/lockers/package/pickup", r.pickupPackage)
 }
 
 // registerLocker handles locker registration
 func (r *LockerRoutes) registerLocker(c echo.Context) error {
 	var input struct {
-		ID int `json:"id"`
+		ID    int   `json:"id"`
 		Ports []int `json:"ports"`
 	}
 
@@ -137,4 +138,22 @@ func (r *LockerRoutes) registerPackage(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, response)
+}
+
+// pickupPackage handles package pickup
+func (r *LockerRoutes) pickupPackage(c echo.Context) error {
+	var input struct {
+		PackageCode string `json:"package_code"`
+		Password    string `json:"password"`
+	}
+
+	if err := c.Bind(&input); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	if err := r.lockerService.PickupPackage(input.PackageCode, input.Password); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }

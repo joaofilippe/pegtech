@@ -386,7 +386,6 @@ func (r *LockerRepository) ReleaseLocker(lockerID int, packageCode string) error
 // SaveLocker saves a locker to the storage
 func (r *LockerRepository) SaveLocker(locker *entities.Port) error {
 	_, err := r.db.DB().Exec(SavePortQuery,
-		locker.ID,
 		locker.Locker,
 		locker.Port,
 		locker.Number,
@@ -442,6 +441,47 @@ func (r *LockerRepository) UpdateLockerStatus(id int, status entities.LockerStat
 	return nil
 }
 
+// GetMQTTClient returns the MQTT client
 func (r *LockerRepository) GetMQTTClient() *mqtt.MqttClient {
 	return r.mqttClient
+}
+
+// GetPackagesByUser retrieves all packages for a specific user
+func (r *LockerRepository) GetPackagesByUser(userID uuid.UUID) ([]*entities.Port, error) {
+	rows, err := r.db.DB().Query(GetPackagesByUserQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ports []*entities.Port
+	for rows.Next() {
+		port := &entities.Port{}
+		err := rows.Scan(
+			&port.ID,
+			&port.Locker,
+			&port.Port,
+			&port.Number,
+			&port.PackageCode,
+			&port.PackagePickupPassword,
+			&port.PackagePickupExpiresAt,
+			&port.PackageUserID,
+			&port.Status,
+			&port.ReservedExpiration,
+			&port.OccupiedAt,
+			&port.OccupiedUntil,
+			&port.CreatedAt,
+			&port.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		ports = append(ports, port)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ports, nil
 }
