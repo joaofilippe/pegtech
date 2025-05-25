@@ -1,9 +1,5 @@
 package mqtt
 
-import (
-	"log"
-)
-
 // Message representa uma mensagem MQTT
 type Message struct {
 	Topic   string
@@ -49,20 +45,27 @@ func (s *Subscriber) GetMessageChannel() <-chan Message {
 }
 
 // SubscribeToPackageRegistration subscreve ao tópico de registro de pacotes
-func (s *Subscriber) SubscribeToPackageRegistration() error {
-	return s.Subscribe("locker/package/register", func(topic string, payload []byte) {
-		// O payload já é uma string, não precisa decodificar JSON
-		packageCode := string(payload)
-		log.Printf("%s", packageCode)
+func (s *Subscriber) SubscribeToPackageRegistration() (chan []byte, error) {
+	lockerChan := make(chan []byte, 100) // Buffer de 100 mensagens
+
+	err := s.Subscribe("locker/package/register/joao", func(topic string, payload []byte) {
+		lockerChan <- payload
 	})
+
+	if err != nil {
+		close(lockerChan)
+		return nil, err
+	}
+
+	return lockerChan, nil
 }
 
 // SubscribeToPackagePickup subscreve ao tópico de retirada de pacotes
 func (s *Subscriber) SubscribeToPackagePickup() (chan []byte, error) {
 	lockerChan := make(chan []byte, 100) // Buffer de 100 mensagens
 
-	err := s.Subscribe("locker/package/pickup", func(topic string, payload []byte) {
-		lockerChan <-payload
+	err := s.Subscribe("locker/package/pickup/joao", func(topic string, payload []byte) {
+		lockerChan <- payload
 	})
 
 	if err != nil {
@@ -77,7 +80,7 @@ func (s *Subscriber) SubscribeToPackagePickup() (chan []byte, error) {
 func (s *Subscriber) SubscribeToLockerAvailable() (chan []byte, error) {
 	availableChan := make(chan []byte, 100) // Buffer de 100 mensagens
 
-	err := s.Subscribe("locker/available", func(topic string, payload []byte) {
+	err := s.Subscribe("locker/available/joao", func(topic string, payload []byte) {
 		// Envia o ID do locker para o canal
 		availableChan <- payload
 	})
@@ -88,14 +91,4 @@ func (s *Subscriber) SubscribeToLockerAvailable() (chan []byte, error) {
 	}
 
 	return availableChan, nil
-}
-
-// Start inicia todas as subscrições
-func (s *Subscriber) Start() error {
-	// Inicia todas as subscrições
-	if err := s.SubscribeToPackageRegistration(); err != nil {
-		return err
-	}
-
-	return nil
 }

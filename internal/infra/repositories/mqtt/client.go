@@ -47,6 +47,8 @@ func (c *MqttClient) Publish(topic string, payload any) error {
 		return err
 	}
 
+	fmt.Printf("\n\nPublished\nTopic: %s\nPayload: %s\n", topic, string(jsonPayload))
+
 	token := c.client.Publish(topic, 0, false, jsonPayload)
 	token.Wait()
 	return token.Error()
@@ -54,16 +56,15 @@ func (c *MqttClient) Publish(topic string, payload any) error {
 
 // Subscribe subscreve em um tópico
 func (c *MqttClient) Subscribe(topic string, handler func([]byte)) error {
-	err := c.client.Subscribe(topic, 0, func(_ mqtt.Client, msg mqtt.Message) {
+	token := c.client.Subscribe(topic, 0, func(_ mqtt.Client, msg mqtt.Message) {
+		fmt.Printf("\n\nMessage received\nTopic: %s\nData: %s\n", msg.Topic(), string(msg.Payload()))
 		handler(msg.Payload())
 	})
 
-	if token := c.client.Subscribe(topic, 0, func(_ mqtt.Client, msg mqtt.Message) {
-		handler(msg.Payload())
-	}); token.Wait() && token.Error() != nil {
+	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	return err.Error()
+	return nil
 }
 
 // Disconnect desconecta o cliente

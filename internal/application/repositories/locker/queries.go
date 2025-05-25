@@ -61,7 +61,6 @@ const (
 			package_pickup_expires_at, package_user_id, status,
 			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
 		FROM ports
-		WHERE locker = $1
 		ORDER BY port ASC
 	`
 
@@ -82,8 +81,9 @@ const (
 			package_pickup_password = $2, 
 			package_user_id = $3, 
 			package_pickup_expires_at = $4, 
-			updated_at = $5 
-		WHERE id = $6 AND locker = $7`
+			updated_at = $5,
+			status = $6
+		WHERE id = $7`
 
 	// ReservePortQuery reserves a port
 	ReservePortQuery = `
@@ -115,5 +115,14 @@ const (
 		FROM ports
 		WHERE package_user_id = $1
 		ORDER BY created_at DESC
+	`
+
+	// GetPortByPackageCodeQuery retrieves a port by package code
+	GetPortByPackageCodeQuery = `
+		SELECT id, locker, port, number, package_code, package_pickup_password,
+			package_pickup_expires_at, package_user_id, status,
+			reserved_expiration, occupied_at, occupied_until, created_at, updated_at
+		FROM ports
+		WHERE package_code = $1
 	`
 )

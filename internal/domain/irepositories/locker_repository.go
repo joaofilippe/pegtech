@@ -20,6 +20,7 @@ type PackageRegistration struct {
 type LockerRepository interface {
 	SaveLocker(locker *entities.Port) error
 	GetLocker(id int) (*entities.Port, error)
+	GetLockerByPackageCode(packageCode string) (*entities.Port, error)
 	GetAvailablePorts(lockerID int) (entities.Locker, error)
 	ListLockers() ([]*entities.Port, error)
 	UpdateLocker(locker *entities.Port) error

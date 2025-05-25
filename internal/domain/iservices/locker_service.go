@@ -12,7 +12,7 @@ type LockerService interface {
 	ReserveLocker(userID uuid.UUID, expirationTime int) (string, error)
 	GetAvailableLockers() ([]int, error)
 	GetLocker(id int) (*entities.Port, error)
-	UpdateLockerStatus(id int, status entities.LockerStatus) error
+	UpdatePortStatus(id string, status entities.LockerStatus) error
 	ListLockers() ([]*entities.Port, error)
 	ReleaseLocker(lockerID int, packageCode string) error
 	StartPackagePickupSubscription() (chan []byte, error)

@@ -90,12 +90,8 @@ func (r *LockerRoutes) updateLockerStatus(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	idInt, err := strconv.Atoi(id)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid locker ID")
-	}
-
-	if err := r.lockerService.UpdateLockerStatus(idInt, entities.LockerStatus(input.Status)); err != nil {
+	
+	if err := r.lockerService.UpdatePortStatus(id, entities.LockerStatus(input.Status)); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

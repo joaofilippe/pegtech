@@ -61,6 +61,11 @@ func (m *MockLockerRepository) GetPackagesByUser(userID uuid.UUID) ([]*entities.
 	return args.Get(0).([]*entities.Port), args.Error(1)
 }
 
+func (m *MockLockerRepository) GetLockerByPackageCode(packageCode string) (*entities.Port, error) {
+	args := m.Called(packageCode)
+	return args.Get(0).(*entities.Port), args.Error(1)
+}
+
 func (m *MockLockerRepository) GetMQTTClient() *mqtt.MqttClient {
 	args := m.Called()
 	return args.Get(0).(*mqtt.MqttClient)
@@ -296,6 +301,10 @@ func TestGetAvailablePorts(t *testing.T) {
 			if tt.expectedError == nil {
 				mockRepo.On("GetAvailablePorts", mock.Anything).Return(tt.mockLocker, nil)
 			}
+			// Create mock method implementation
+			mockRepo.On("GetLockerByPackageCode", mock.Anything).Return(nil, nil)
+			// Create mock method implementation
+			mockRepo.On("GetLockerByPackageCode", mock.Anything).Return(nil, nil)
 
 			// Create use case with mock repository
 			uc := NewRegisterPackageCase(mockRepo)

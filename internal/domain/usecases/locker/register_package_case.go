@@ -70,12 +70,6 @@ func (uc *RegisterPackageCase) Execute(userID uuid.UUID, expirationTime int) (st
 		return "", err
 	}
 
-	// Update locker status to occupied
-	err = uc.lockerRepo.UpdateLockerStatus(availableLocker.ID, entities.LockerStatusOccupied)
-	if err != nil {
-		return "", err
-	}
-
 	return packageCode, nil
 }
 

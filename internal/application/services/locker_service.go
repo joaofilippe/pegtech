@@ -18,7 +18,7 @@ type LockerService struct {
 	reserveLockerCase      *lockerusecases.ReserveLockerCase
 	getAvailableLockerCase *lockerusecases.GetAvailableLockersCase
 	getLockerCase          *lockerusecases.GetLockerCase
-	updateLockerStatusCase *lockerusecases.UpdateLockerStatusCase
+	updateLockerStatusCase *lockerusecases.UpdatePortStatusCase
 	listLockersCase        *lockerusecases.ListLockersCase
 	releaseLockerCase      *lockerusecases.ReleaseLockerCase
 	pickupPackageCase      *lockerusecases.PickupPackageCase
@@ -32,7 +32,7 @@ func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.Locke
 		registerPackageCase:    lockerusecases.NewRegisterPackageCase(lockerRepo),
 		getAvailableLockerCase: lockerusecases.NewGetAvailableLockersCase(lockerRepo),
 		getLockerCase:          lockerusecases.NewGetLockerCase(lockerRepo),
-		updateLockerStatusCase: lockerusecases.NewUpdateLockerStatusCase(lockerRepo),
+		updateLockerStatusCase: lockerusecases.NewUpdatePortStatusCase(lockerRepo),
 		listLockersCase:        lockerusecases.NewListLockersCase(lockerRepo),
 		reserveLockerCase:      lockerusecases.NewReserveLockerCase(lockerRepo),
 		releaseLockerCase:      lockerusecases.NewReleaseLockerCase(lockerRepo),
@@ -55,7 +55,7 @@ func (s *LockerService) GetLocker(id int) (*entities.Port, error) {
 	return s.getLockerCase.Execute(id)
 }
 
-func (s *LockerService) UpdateLockerStatus(id int, status entities.LockerStatus) error {
+func (s *LockerService) UpdatePortStatus(id string, status entities.LockerStatus) error {
 	return s.updateLockerStatusCase.Execute(id, status)
 }
 
@@ -122,15 +122,31 @@ func (s *LockerService) StartPackagePickupSubscription() (chan []byte, error) {
 func (s *LockerService) StartRegisterPackageSubscription() error {
 	subscriber := mqtt.NewSubscriber(s.mqttClient)
 
-	err := subscriber.SubscribeToPackageRegistration()
+	registerChan, err := subscriber.SubscribeToPackageRegistration()
 	if err != nil {
 		return err
 	}
 
-	_, err = subscriber.SubscribeToLockerAvailable()
-	if err != nil {
-		return err
-	}
+	go func() {
+		for register := range registerChan {
+			var registerInput struct {
+				ID          int    `json:"locker_id"`
+				PackageCode string `json:"package_code"`
+				Message     string `json:"msg"`
+			}
+
+			if err := json.Unmarshal(register, &registerInput); err != nil {
+				log.Printf("Erro ao decodificar mensagem MQTT: %v", err)
+				continue
+			}
+
+			if len(registerInput.Message) > 0 {
+				log.Printf("Pacote %s registrado no locker %d", registerInput.PackageCode, registerInput.ID)
+				s.UpdatePortStatus(registerInput.PackageCode, entities.LockerStatusOccupied)
+			}
+
+		}
+	}()
 
 	return nil
 }

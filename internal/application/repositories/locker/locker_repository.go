@@ -148,14 +148,35 @@ func (r *LockerRepository) ListPorts(lockerID int) ([]*entities.Port, error) {
 
 // GetAvailablePorts retrieves all available ports for a locker
 func (r *LockerRepository) GetAvailablePorts(lockerID int) (entities.Locker, error) {
-	// Request available ports from MQTT
-	if err := r.mqttClient.Publish("locker/available", []byte{}); err != nil {
-		log.Printf("Error requesting available ports from MQTT: %v", err)
+	// Criar canal temporário para esta consulta específica
+	tempChan := make(chan []byte, 10)
+
+	// Função para fechar o canal de forma segura
+	defer func() {
+		select {
+		case <-tempChan:
+		default:
+		}
+		close(tempChan)
+	}()
+
+	// Subscribe temporariamente usando o cliente MQTT diretamente
+	err := r.mqttClient.Subscribe("locker/available/joao", func(payload []byte) {
+		select {
+		case tempChan <- payload:
+		default:
+			// Canal cheio, ignora mensagem
+		}
+	})
+
+	if err != nil {
 		return entities.Locker{}, err
 	}
 
-	availableChan, err := r.subscriber.SubscribeToLockerAvailable()
-	if err != nil {
+	// Publicar requisição
+	requestMap := map[string]int{"locker_id": lockerID}
+	if err := r.mqttClient.Publish("locker/available/joao", requestMap); err != nil {
+		log.Printf("Error requesting available ports from MQTT: %v", err)
 		return entities.Locker{}, err
 	}
 
@@ -164,12 +185,12 @@ func (r *LockerRepository) GetAvailablePorts(lockerID int) (entities.Locker, err
 		Ports: make([]*entities.Port, 0),
 	}
 
-	// Use timeout to avoid infinite waiting
+	// Timeout
 	timeout := time.After(15 * time.Second)
 
 	for {
 		select {
-		case available := <-availableChan:
+		case available := <-tempChan:
 			var availableData struct {
 				LockerID int   `json:"locker_id"`
 				Ports    []int `json:"ports"`
@@ -180,9 +201,7 @@ func (r *LockerRepository) GetAvailablePorts(lockerID int) (entities.Locker, err
 				continue
 			}
 
-			// Check if this response is for the requested locker
 			if availableData.LockerID == lockerID && len(availableData.Ports) > 0 {
-				// Create ports from MQTT data only
 				for _, portNum := range availableData.Ports {
 					port := &entities.Port{
 						Locker: lockerID,
@@ -191,12 +210,10 @@ func (r *LockerRepository) GetAvailablePorts(lockerID int) (entities.Locker, err
 					}
 					locker.Ports = append(locker.Ports, port)
 				}
-
 				return locker, nil
 			}
 
 		case <-timeout:
-			// Timeout reached - return empty locker or fallback to database
 			log.Printf("Timeout waiting for MQTT response for locker %d", lockerID)
 			return locker, nil
 		}
@@ -219,7 +236,7 @@ func (r *LockerRepository) RegisterPackage(lockerID int, registration irepositor
 		ExpiresAt:             registration.ExpiresAt,
 	}
 
-	err := r.mqttClient.Publish("locker/package/register", packageMQTT)
+	err := r.mqttClient.Publish("locker/package/register/joao", packageMQTT)
 	if err != nil {
 		return err
 	}
@@ -230,8 +247,8 @@ func (r *LockerRepository) RegisterPackage(lockerID int, registration irepositor
 		registration.UserID,
 		registration.ExpiresAt,
 		time.Now(),
+		"RESERVED",
 		lockerID,
-		lockerID, // Using lockerID as port for now
 	)
 	return err
 }
@@ -318,7 +335,7 @@ func (r *LockerRepository) GetLocker(id int) (*entities.Port, error) {
 
 // ListLockers retrieves all lockers
 func (r *LockerRepository) ListLockers() ([]*entities.Port, error) {
-	rows, err := r.db.DB().Query(ListPortsQuery, 0)
+	rows, err := r.db.DB().Query(ListPortsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -475,4 +492,35 @@ func (r *LockerRepository) GetPackagesByUser(userID uuid.UUID) ([]*entities.Port
 	}
 
 	return ports, nil
+}
+
+// GetLockerByPackageCode retrieves a locker by package code
+func (r *LockerRepository) GetLockerByPackageCode(packageCode string) (*entities.Port, error) {
+	port := &entities.Port{}
+	err := r.db.DB().QueryRow(GetPortByPackageCodeQuery, packageCode).Scan(
+		&port.ID,
+		&port.Locker,
+		&port.Port,
+		&port.Number,
+		&port.PackageCode,
+		&port.PackagePickupPassword,
+		&port.PackagePickupExpiresAt,
+		&port.PackageUserID,
+		&port.Status,
+		&port.ReservedExpiration,
+		&port.OccupiedAt,
+		&port.OccupiedUntil,
+		&port.CreatedAt,
+		&port.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, ErrLockerNotFound
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return port, nil
 }

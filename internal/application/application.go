@@ -49,6 +49,5 @@ func (a *Application) startSubscriptions() error {
 	if err != nil {
 		return err
 	}
-
 	return a.LockerService.StartRegisterPackageSubscription()
 }
