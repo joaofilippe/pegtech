@@ -151,6 +151,7 @@ func (r *LockerRepository) GetAvailablePorts(lockerID int) (entities.Locker, err
 	// Request available ports from MQTT
 	if err := r.mqttClient.Publish("locker/available", []byte{}); err != nil {
 		log.Printf("Error requesting available ports from MQTT: %v", err)
+		return entities.Locker{}, err
 	}
 
 	availableChan, err := r.subscriber.SubscribeToLockerAvailable()
@@ -163,19 +164,43 @@ func (r *LockerRepository) GetAvailablePorts(lockerID int) (entities.Locker, err
 		Ports: make([]*entities.Port, 0),
 	}
 
-	for available := range availableChan {
-		var availableData struct {
-			LockerID int   `json:"locker_id"`
-			Ports    []int `json:"ports"`
-		}
+	// Use timeout to avoid infinite waiting
+	timeout := time.After(15 * time.Second)
 
-		if err := json.Unmarshal(available, &availableData); err != nil {
-			log.Printf("Error unmarshalling available ports: %v", err)
-			continue
+	for {
+		select {
+		case available := <-availableChan:
+			var availableData struct {
+				LockerID int   `json:"locker_id"`
+				Ports    []int `json:"ports"`
+			}
+
+			if err := json.Unmarshal(available, &availableData); err != nil {
+				log.Printf("Error unmarshalling available ports: %v", err)
+				continue
+			}
+
+			// Check if this response is for the requested locker
+			if availableData.LockerID == lockerID && len(availableData.Ports) > 0 {
+				// Create ports from MQTT data only
+				for _, portNum := range availableData.Ports {
+					port := &entities.Port{
+						Locker: lockerID,
+						Port:   portNum,
+						Status: entities.LockerStatusAvailable,
+					}
+					locker.Ports = append(locker.Ports, port)
+				}
+
+				return locker, nil
+			}
+
+		case <-timeout:
+			// Timeout reached - return empty locker or fallback to database
+			log.Printf("Timeout waiting for MQTT response for locker %d", lockerID)
+			return locker, nil
 		}
 	}
-
-	return locker, nil
 }
 
 // RegisterPackage registers a package in a port
