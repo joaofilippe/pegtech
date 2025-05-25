@@ -31,6 +31,7 @@ func (r *LockerRoutes) Register(e *echo.Echo) {
 	e.GET("/lockers", r.listLockers)
 	e.POST("/lockers/package", r.registerPackage)
 	e.POST("/lockers/package/pickup", r.pickupPackage)
+	e.GET("/lockers/packages/user/:user_id", r.getPackagesByUser)
 }
 
 // registerLocker handles locker registration
@@ -156,4 +157,20 @@ func (r *LockerRoutes) pickupPackage(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusNoContent)
+}
+
+// getPackagesByUser handles retrieval of all packages for a specific user
+func (r *LockerRoutes) getPackagesByUser(c echo.Context) error {
+	userIDStr := c.Param("user_id")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID format")
+	}
+
+	packages, err := r.lockerService.GetPackagesByUser(userID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, packages)
 }

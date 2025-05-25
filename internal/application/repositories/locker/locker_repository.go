@@ -173,40 +173,6 @@ func (r *LockerRepository) GetAvailablePorts(lockerID int) (entities.Locker, err
 			log.Printf("Error unmarshalling available ports: %v", err)
 			continue
 		}
-
-		if availableData.LockerID == lockerID && len(availableData.Ports) > 0 {
-			// Get port details from database
-			rows, err := r.db.DB().Query(GetAvailablePortsQuery, entities.LockerStatusAvailable, lockerID)
-			if err != nil {
-				return entities.Locker{}, err
-			}
-			defer rows.Close()
-
-			for rows.Next() {
-				port := &entities.Port{}
-				err := rows.Scan(
-					&port.ID,
-					&port.Locker,
-					&port.Port,
-					&port.Number,
-					&port.PackageCode,
-					&port.PackagePickupPassword,
-					&port.PackagePickupExpiresAt,
-					&port.PackageUserID,
-					&port.Status,
-					&port.ReservedExpiration,
-					&port.OccupiedAt,
-					&port.OccupiedUntil,
-					&port.CreatedAt,
-					&port.UpdatedAt,
-				)
-				if err != nil {
-					return entities.Locker{}, err
-				}
-				locker.Ports = append(locker.Ports, port)
-			}
-			break
-		}
 	}
 
 	return locker, nil

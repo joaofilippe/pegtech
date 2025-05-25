@@ -22,6 +22,7 @@ type LockerService struct {
 	listLockersCase        *lockerusecases.ListLockersCase
 	releaseLockerCase      *lockerusecases.ReleaseLockerCase
 	pickupPackageCase      *lockerusecases.PickupPackageCase
+	getPackagesByUserCase  *lockerusecases.GetPackagesByUserCase
 	mqttClient             *mqtt.MqttClient
 }
 
@@ -36,6 +37,7 @@ func NewLockerService(lockerRepo irepositories.LockerRepository) iservices.Locke
 		reserveLockerCase:      lockerusecases.NewReserveLockerCase(lockerRepo),
 		releaseLockerCase:      lockerusecases.NewReleaseLockerCase(lockerRepo),
 		pickupPackageCase:      lockerusecases.NewPickupPackageCase(lockerRepo),
+		getPackagesByUserCase:  lockerusecases.NewGetPackagesByUserCase(lockerRepo),
 		mqttClient:             lockerRepo.GetMQTTClient(),
 	}
 }
@@ -153,4 +155,9 @@ func (s *LockerService) StartLockerAvailableSubscription() (chan []byte, error) 
 	}
 
 	return availableChan, nil
+}
+
+// GetPackagesByUser implements iservices.LockerService
+func (s *LockerService) GetPackagesByUser(userID uuid.UUID) ([]*entities.Port, error) {
+	return s.getPackagesByUserCase.Execute(userID)
 }

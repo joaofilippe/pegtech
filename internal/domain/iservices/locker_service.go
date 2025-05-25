@@ -18,4 +18,5 @@ type LockerService interface {
 	StartPackagePickupSubscription() (chan []byte, error)
 	StartRegisterPackageSubscription() error
 	PickupPackage(packageCode string, password string) error
+	GetPackagesByUser(userID uuid.UUID) ([]*entities.Port, error)
 }
